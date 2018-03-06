@@ -56,6 +56,8 @@ jobs:
       - task: install-go-dependencies
         file: ignition/ci/install-go-dependencies.yml
       - aggregate:
+        - task: unit
+          file: ignition/ci/unit.yml
         - task: build
           file: ignition/ci/build-go.yml
         on_failure:
@@ -88,5 +90,7 @@ jobs:
       - task: install-go-dependencies
         file: ignition/ci/install-go-dependencies.yml
       - aggregate:
+        - task: unit
+          file: ignition/ci/unit.yml
         - task: build
           file: ignition/ci/build-go.yml
