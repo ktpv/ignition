@@ -27,7 +27,7 @@ jobs:
 
       - restore_cache:
           keys:
-          - dependencies-{{ checksum "package.json" }}
+          - dependencies-{{ checksum "web/package.json" }}
           - dependencies-
 
       - run: yarn install
@@ -35,7 +35,7 @@ jobs:
       - save_cache:
           paths:
             - web/node_modules
-          key: dependencies-{{ checksum "package.json" }}
+          key: dependencies-{{ checksum "web/package.json" }}
       - run: yarn ci
       - persist_to_workspace:
           root: ~/ignition/web/dist
