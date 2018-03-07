@@ -89,13 +89,13 @@ jobs:
           working_directory: ~/
           command: |
             curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx
-            mv cf /usr/local/bin
+            chmod u+x ./cf
       - run:
           working_directory: ~/ignition
           command: |
             echo 'ignition.tar.gz' > .cfignore
-            cf login -a $CF_API -u $CF_USERNAME -p "$CF_PASSWORD" -o $CF_ORG -s $CF_SPACE
-            cf push ignition -f /go/src/github.com/pivotalservices/ignition/manifests/ignition.yml
+            ./../cf login -a $CF_API -u $CF_USERNAME -p "$CF_PASSWORD" -o $CF_ORG -s $CF_SPACE
+            ./../cf push ignition -f /go/src/github.com/pivotalservices/ignition/manifests/ignition.yml
 workflows:
   version: 2
 
