@@ -98,6 +98,8 @@ workflows:
             - build-go
             - build-node
       - release:
+          - requires:
+            - package
           filters:
             tags:
               only: /^v.*/
