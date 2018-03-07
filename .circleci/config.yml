@@ -60,16 +60,46 @@ jobs:
       - store_artifacts:
           path: ~/ignition.tar.gz
           destination: ignition.tar.gz
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - ignition.tar.gz
 
+  release:
+    docker:
+      - image: circleci/golang:latest
+    working_directory: /go/src/github.com/pivotalservices/ignition
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/ignition
+      - run: |
+          go get -u github.com/tcnksm/ghr
+          ghr -t $GITHUB_TOKEN -u GITHUB_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG ~/ignition/ignition.tar.gz
 
 workflows:
   version: 2
 
-  package:
+  ci:
     jobs:
-      - build-go
-      - build-node
+      - build-go:
+          filters:
+            tags:
+              only: /.*/
+      - build-node:
+          filters:
+            tags:
+              only: /.*/
       - package:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build-go
             - build-node
+      - release:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
