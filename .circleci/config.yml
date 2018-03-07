@@ -74,9 +74,9 @@ jobs:
       - attach_workspace:
           at: ~/ignition
       - run: |
-          go get github.com/aktau/github-release
-          github-release release --user $GITHUB_USERNAME --repo $CIRCLE_PROJECT_REPONAME --tag $CIRCLE_TAG --pre-release
-          github-release upload --user $GITHUB_USERNAME --repo $CIRCLE_PROJECT_REPONAME --tag $CIRCLE_TAG --name "ignition.tar.gz" --file ~/ignition/ignition.tar.gz
+          go get -u github.com/tcnksm/ghr
+          ghr -t $GITHUB_TOKEN -u $GITHUB_USERNAME $CIRCLE_TAG ~/ignition/ignition.tar.gz
+
 workflows:
   version: 2
 
