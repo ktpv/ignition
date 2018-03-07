@@ -46,6 +46,21 @@ jobs:
           paths:
             - index.html
             - assets/*
+  package:
+    docker:
+      - image: circleci/golang:latest
+    working_directory: ~/ignition
+    steps:
+      - attach_workspace:
+          at: ~/ignition
+      - run:
+          working_directory: ~
+          command: tar -czf ignition.tar.gz ignition
+      - store_artifacts:
+          path: ~/ignition.tar.gz
+          destination: ignition.tar.gz
+
+
 workflows:
   version: 2
 
@@ -53,3 +68,7 @@ workflows:
     jobs:
       - build-go
       - build-node
+      - package:
+          requires:
+            - build-go
+            - build-node
