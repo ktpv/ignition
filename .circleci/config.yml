@@ -90,7 +90,7 @@ jobs:
           command: |
             go get -u github.com/cloudfoundry/cli
             echo 'ignition.tar.gz' > .cfignore
-            cf login -a https://api.run.pcfbeta.io -u $CF_USERNAME -p "$CF_PASSWORD" -o ignition -s development
+            cf login -a $CF_API -u $CF_USERNAME -p "$CF_PASSWORD" -o $CF_ORG -s $CF_SPACE
             cf push ignition -f /go/src/github.com/pivotalservices/ignition/manifests/ignition.yml
 workflows:
   version: 2
