@@ -1,13 +1,51 @@
 version: 2
 jobs:
-  build:
+  build-go:
     docker:
       - image: circleci/golang:latest
     working_directory: /go/src/github.com/pivotalservices/ignition
     steps:
       - checkout
       - run: |
+          mkdir -p /tmp/output
           go get -u github.com/golang/dep/cmd/dep
           dep ensure
       - run: |
           go test ./... -covermode=atomic -coverprofile=coverage.txt
+      - run: |
+          GOOS=linux GOARCH=amd64 go build -o /tmp/ignition-linux-amd64 github.com/pivotalservices/ignition/cmd/ignition
+      - persist_to_workspace:
+          root: /tmp/output
+          paths:
+            - ignition-linux-amd64
+  build-node:
+    docker:
+      - image: circleci/node:8
+    working_directory: ~/ignition
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - dependencies-{{ checksum "package.json" }}
+          - dependencies-
+
+      - run: yarn install
+
+      - save_cache:
+          paths:
+            - web/node_modules
+          key: dependencies-{{ checksum "package.json" }}
+      - run: yarn ci
+      - persist_to_workspace:
+          root: ~/ignition/web/dist
+          paths:
+            - index.html
+            - assets/*
+workflows:
+  version: 2
+
+  package:
+    jobs:
+      - build-go
+      - build-node
