@@ -75,7 +75,7 @@ jobs:
           at: ~/ignition
       - run: |
           go get -u github.com/tcnksm/ghr
-          ghr -t $GITHUB_TOKEN -u GITHUB_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG ~/ignition/ignition.tar.gz
+          ghr -t $GITHUB_TOKEN -u $GITHUB_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG ~/ignition/ignition.tar.gz
 
 workflows:
   version: 2
