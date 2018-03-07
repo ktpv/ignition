@@ -17,3 +17,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/sclevine/spec"
+
+[[constraint]]
+  name = "github.com/cloudfoundry-community/go-cfenv"
+  version = "1.17.0"

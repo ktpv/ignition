@@ -18,3 +18,4 @@ web/dist
 web/yarn-error.log
 vendor/
 /credentials
+.DS_Store
