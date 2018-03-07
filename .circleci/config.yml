@@ -98,7 +98,7 @@ workflows:
             - build-go
             - build-node
       - release:
-          - requires:
+          requires:
             - package
           filters:
             tags:
