@@ -54,8 +54,9 @@ jobs:
       - attach_workspace:
           at: ~/ignition
       - run:
-          working_directory: ~
-          command: tar -czf ~/ignition.tar.gz ~/ignition
+          command: |
+            cd ..
+            tar -czf ignition.tar.gz ignition
       - store_artifacts:
           path: ~/ignition.tar.gz
           destination: ignition.tar.gz
