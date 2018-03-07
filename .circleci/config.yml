@@ -13,7 +13,7 @@ jobs:
       - run: |
           go test ./... -covermode=atomic -coverprofile=coverage.txt
       - run: |
-          GOOS=linux GOARCH=amd64 go build -o /tmp/ignition-linux-amd64 github.com/pivotalservices/ignition/cmd/ignition
+          GOOS=linux GOARCH=amd64 go build -o /tmp/output/ignition-linux-amd64 github.com/pivotalservices/ignition/cmd/ignition
       - persist_to_workspace:
           root: /tmp/output
           paths:
