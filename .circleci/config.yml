@@ -30,13 +30,17 @@ jobs:
           - dependencies-{{ checksum "web/package.json" }}
           - dependencies-
 
-      - run: yarn install
+      - run:
+          working_directory: web
+          command: yarn install
 
       - save_cache:
           paths:
             - web/node_modules
           key: dependencies-{{ checksum "web/package.json" }}
-      - run: yarn ci
+      - run:
+          working_directory: web
+          command: yarn ci
       - persist_to_workspace:
           root: ~/ignition/web/dist
           paths:
