@@ -77,6 +77,21 @@ jobs:
           go get -u github.com/tcnksm/ghr
           ghr -t $GITHUB_TOKEN -u $GITHUB_USERNAME $CIRCLE_TAG ~/ignition/ignition.tar.gz
 
+  deploy:
+    docker:
+      - image: circleci/golang:latest
+    working_directory: /go/src/github.com/pivotalservices/ignition
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/ignition
+      - run:
+          working_directory: ~/ignition
+          command: |
+            go get -u github.com/cloudfoundry/cli
+            echo 'ignition.tar.gz' > .cfignore
+            cf login -a https://api.run.pcfbeta.io -u $CF_USERNAME -p "$CF_PASSWORD" -o ignition -s development
+            cf push ignition -f /go/src/github.com/pivotalservices/ignition/manifests/ignition.yml
 workflows:
   version: 2
 
@@ -98,6 +113,14 @@ workflows:
             - build-go
             - build-node
       - release:
+          requires:
+            - package
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy:
           requires:
             - package
           filters:
