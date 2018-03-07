@@ -55,7 +55,7 @@ jobs:
           at: ~/ignition
       - run:
           working_directory: ~
-          command: tar -czf ignition.tar.gz ignition
+          command: tar -czf ~/ignition.tar.gz ~/ignition
       - store_artifacts:
           path: ~/ignition.tar.gz
           destination: ignition.tar.gz
