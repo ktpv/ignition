@@ -86,9 +86,13 @@ jobs:
       - attach_workspace:
           at: ~/ignition
       - run:
+          working_directory: ~/
+          command: |
+            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx
+            mv cf /usr/local/bin
+      - run:
           working_directory: ~/ignition
           command: |
-            go get -u github.com/cloudfoundry/cli
             echo 'ignition.tar.gz' > .cfignore
             cf login -a $CF_API -u $CF_USERNAME -p "$CF_PASSWORD" -o $CF_ORG -s $CF_SPACE
             cf push ignition -f /go/src/github.com/pivotalservices/ignition/manifests/ignition.yml
