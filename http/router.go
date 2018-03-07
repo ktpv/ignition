@@ -11,14 +11,12 @@ import (
 )
 
 // Run starts a server listening on the given serveURI
-func Run(serveURI string) error {
+func Run(serveURI string, webroot string) error {
 	r := mux.NewRouter()
-	root, _ := os.Getwd()
-	webRoot := filepath.Join(root, "web")
 	r.Handle("/", ensureHTTPS(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		http.ServeFile(w, req, filepath.Join(webRoot, "dist", "index.html"))
+		http.ServeFile(w, req, filepath.Join(webroot, "index.html"))
 	})))
 
-	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(webRoot, "dist", "assets")+string(os.PathSeparator)))))
+	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(webroot, "assets")+string(os.PathSeparator)))))
 	return http.ListenAndServe(serveURI, handlers.LoggingHandler(os.Stdout, handlers.CORS()(r)))
 }
