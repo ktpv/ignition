@@ -107,6 +107,18 @@ workflows:
           requires:
             - build-go
             - build-node
+  debug:
+    jobs:
+      - build-go
+      - build-node
+      - package:
+          requires:
+            - build-go
+            - build-node
+      - release:
+          requires:
+            - package
+
   release:
     jobs:
       - build-go:
