@@ -113,19 +113,19 @@ workflows:
       - build-go:
           filters:
             branches:
-              only: /^.*/
+              only: somenonexistentbranch
             tags:
               only: /^v.*/
       - build-node:
           filters:
             branches:
-              only: /^.*/
+              only: somenonexistentbranch
             tags:
               only: /^v.*/
       - package:
           filters:
             branches:
-              only: /^.*/
+              only: somenonexistentbranch
             tags:
               only: /^v.*/
           requires:
@@ -134,7 +134,7 @@ workflows:
       - release:
           filters:
             branches:
-              only: /^.*/
+              only: somenonexistentbranch
             tags:
               only: /^v.*/
           requires:
@@ -142,7 +142,7 @@ workflows:
       - deploy:
           filters:
             branches:
-              only: /^.*/
+              only: somenonexistentbranch
             tags:
               only: /^v.*/
           requires:
