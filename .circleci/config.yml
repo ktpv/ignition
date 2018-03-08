@@ -107,10 +107,34 @@ workflows:
           requires:
             - build-go
             - build-node
+
+  ship-it:
+    jobs:
+      - build-go:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+      - build-node:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+      - package:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          requires:
+            - build-go
+            - build-node
       - release:
           filters:
             branches:
-              only: somenonexistentbranch
+              ignore: /.*/
             tags:
               only: /^v.*/
           requires:
@@ -118,7 +142,7 @@ workflows:
       - deploy:
           filters:
             branches:
-              only: somenonexistentbranch
+              ignore: /.*/
             tags:
               only: /^v.*/
           requires:
