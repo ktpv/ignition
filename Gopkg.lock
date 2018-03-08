@@ -51,6 +51,12 @@
   revision = "de89e61d40b75aa971a9fc3eae7f4fefabd6e0ee"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/sclevine/spec"
   packages = [
@@ -102,6 +108,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5c2f175bc3b2a8d4e634aebce44e5eb658c5de29b3e0d0442629b878768a4c5b"
+  inputs-digest = "3821ab622f9e74133fc25667eb5e41491202605dd74e294d60630cffee9cbd36"
   solver-name = "gps-cdcl"
   solver-version = 1
