@@ -107,30 +107,6 @@ workflows:
           requires:
             - build-go
             - build-node
-
-  release:
-    jobs:
-      - build-go:
-          filters:
-            branches:
-              only: somenonexistentbranch
-            tags:
-              only: /^v.*/
-      - build-node:
-          filters:
-            branches:
-              only: somenonexistentbranch
-            tags:
-              only: /^v.*/
-      - package:
-          filters:
-            branches:
-              only: somenonexistentbranch
-            tags:
-              only: /^v.*/
-          requires:
-            - build-go
-            - build-node
       - release:
           filters:
             branches:
