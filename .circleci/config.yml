@@ -119,12 +119,21 @@ workflows:
             tags:
               only: /^v.*/
       - package:
+          filters:
+            tags:
+              only: /^v.*/
           requires:
             - build-go
             - build-node
       - release:
+          filters:
+            tags:
+              only: /^v.*/
           requires:
             - package
       - deploy:
+          filters:
+            tags:
+              only: /^v.*/
           requires:
             - package
