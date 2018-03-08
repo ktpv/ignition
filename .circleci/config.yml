@@ -112,14 +112,20 @@ workflows:
     jobs:
       - build-go:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
       - build-node:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
       - package:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
           requires:
@@ -127,12 +133,16 @@ workflows:
             - build-node
       - release:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
           requires:
             - package
       - deploy:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
           requires:
