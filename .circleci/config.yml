@@ -101,34 +101,33 @@ workflows:
 
   ci:
     jobs:
+      - build-go
+      - build-node
+      - package:
+          requires:
+            - build-go
+            - build-node
+  release:
+    jobs:
       - build-go:
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - build-node:
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - package:
-          filters:
-            tags:
-              only: /.*/
           requires:
             - build-go
             - build-node
       - release:
           requires:
             - package
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
       - deploy:
           requires:
             - package
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
