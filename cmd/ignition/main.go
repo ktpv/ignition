@@ -12,8 +12,11 @@ import (
 )
 
 type config struct {
-	serveURI     string
+	port         int
+	servePort    int
+	domain       string
 	webRoot      string
+	scheme       string
 	authDomain   string
 	clientID     string
 	clientSecret string
@@ -25,12 +28,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(fmt.Sprintf("Starting Server listening on %s", c.serveURI))
 	api := http.API{
-		ServeURI:   c.serveURI,
 		WebRoot:    c.webRoot,
 		AuthDomain: c.authDomain,
+		Scheme:     c.scheme,
+		Port:       c.port,
+		ServePort:  c.servePort,
+		Domain:     c.domain,
 	}
+	fmt.Println(fmt.Sprintf("Starting Server listening on %s", api.URI()))
 	log.Fatal(api.Run(c.clientID, c.clientSecret))
 }
 
@@ -45,7 +51,13 @@ func buildConfig() (*config, error) {
 		if err != nil {
 			return nil, err
 		}
-		c.serveURI = fmt.Sprintf(":%v", env.Port)
+		c.scheme = "https"
+		c.servePort = env.Port
+		c.port = 443
+		if len(env.ApplicationURIs) == 0 {
+			return nil, errors.New("ignition requires a route to function; please map a route")
+		}
+		c.domain = env.ApplicationURIs[0]
 		c.webRoot = root
 		service, err := env.Services.WithName("identity")
 		if err != nil {
@@ -66,12 +78,17 @@ func buildConfig() (*config, error) {
 			return nil, errors.New("could not retrieve the client_secret; make sure you have created and bound a Single Sign On service instance with the name \"identity\"")
 		}
 		c.clientSecret = clientSecret
+		c.scheme = "https"
 	} else {
-		c.serveURI = fmt.Sprintf(":%v", 3000)
+		c.scheme = "http"
+		c.servePort = 3000
+		c.port = 3000
+		c.domain = "localhost"
 		c.webRoot = filepath.Join(root, "web", "dist")
 		c.authDomain = os.Getenv("IGNITION_AUTH_DOMAIN")
 		c.clientID = os.Getenv("IGNITION_CLIENT_ID")
 		c.clientSecret = os.Getenv("IGNITION_CLIENT_SECRET")
+		c.scheme = "http"
 	}
 	return c, nil
 }

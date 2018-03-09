@@ -70,7 +70,20 @@ func TestAPI(t *testing.T) {
 			it("uses the correct port", func() {
 				c, err := buildConfig()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(c.serveURI).To(Equal(":3000"))
+				Expect(c.servePort).To(Equal(3000))
+				Expect(c.port).To(Equal(3000))
+			})
+
+			it("uses the correct scheme", func() {
+				c, err := buildConfig()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(c.scheme).To(Equal("http"))
+			})
+
+			it("uses the correct domain", func() {
+				c, err := buildConfig()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(c.domain).To(Equal("localhost"))
 			})
 		})
 
@@ -109,7 +122,8 @@ func TestAPI(t *testing.T) {
 			it("uses the correct port", func() {
 				c, err := buildConfig()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(c.serveURI).To(Equal(":12345"))
+				Expect(c.port).To(Equal(443))
+				Expect(c.servePort).To(Equal(12345))
 			})
 
 			it("uses the correct webroot", func() {
@@ -237,6 +251,17 @@ func TestAPI(t *testing.T) {
 				Expect(err.Error()).To(ContainSubstring("could not retrieve the client_secret; make sure you have created and bound a Single Sign On service instance with the name \"identity\""))
 			})
 
+			it("uses the correct scheme", func() {
+				c, err := buildConfig()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(c.scheme).To(Equal("https"))
+			})
+
+			it("uses the correct domain", func() {
+				c, err := buildConfig()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(c.domain).To(Equal("ignition.pcfbeta.io"))
+			})
 		})
 	})
 }
