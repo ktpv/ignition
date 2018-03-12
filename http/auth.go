@@ -32,22 +32,12 @@ const (
 var sessionStore = sessions.NewCookieStore([]byte(sessionSecret), nil)
 
 func (a *API) handleAuth(r *mux.Router) {
-	c := oauth2.Config{
-		ClientID:     a.clientID,
-		ClientSecret: a.clientSecret,
-		RedirectURL:  fmt.Sprintf("%s%s", a.URI(), "/oauth2"),
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  a.AuthURL,
-			TokenURL: a.TokenURL,
-		},
-		Scopes: a.AuthScopes,
-	}
 	stateConfig := gologin.DefaultCookieConfig
 	if a.Domain == "localhost" {
 		stateConfig = gologin.DebugOnlyCookieConfig
 	}
-	r.Handle("/login", ensureHTTPS(dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(&c, nil)))).Name("login")
-	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(&c, IssueSession(), nil)))).Name("oauth2")
+	r.Handle("/login", ensureHTTPS(dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(a.OAuth2Config, nil)))).Name("login")
+	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, IssueSession(), nil)))).Name("oauth2")
 	r.Handle("/logout", ensureHTTPS(http.HandlerFunc(LogoutHandler))).Name("logout")
 }
 

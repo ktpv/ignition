@@ -9,6 +9,4 @@ applications:
     - identity
   env:
     IGNITION_AUTH_VARIANT: "google"
-    IGNITION_AUTH_URL: "https://accounts.google.com/o/oauth2/auth?approval_prompt=force&access_type=offline"
-    IGNITION_TOKEN_URL: "https://accounts.google.com/o/oauth2/token"
-    IGNITION_AUTH_SCOPES: "profile,email"
+    IGNITION_AUTH_DOMAIN: "https://accounts.google.com"

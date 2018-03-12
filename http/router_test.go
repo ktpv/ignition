@@ -15,27 +15,6 @@ func TestAPI(t *testing.T) {
 			api = &API{}
 		})
 
-		it("does not validate when there is an empty client id", func() {
-			err := api.validate("", "")
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("you must supply a non-empty client ID"))
-			err = api.Run("", "")
-			Expect(err).To(HaveOccurred())
-		})
-
-		it("does not validate when there is an empty client secret", func() {
-			err := api.validate("abc", "")
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("you must supply a non-empty client secret"))
-			err = api.Run("abc", "")
-			Expect(err).To(HaveOccurred())
-		})
-
-		it("validates when there is a non empty client id and client secret", func() {
-			err := api.validate("abc", "def")
-			Expect(err).To(BeNil())
-		})
-
 		it("creates a valid router", func() {
 			r := api.createRouter()
 			Expect(r).NotTo(BeNil())

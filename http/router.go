@@ -6,11 +6,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
 )
 
 // API is the Ignition web app
@@ -20,12 +19,7 @@ type API struct {
 	ServePort    int
 	WebRoot      string
 	Scheme       string
-	AuthVariant  string
-	AuthURL      string
-	TokenURL     string
-	AuthScopes   []string
-	clientID     string
-	clientSecret string
+	OAuth2Config *oauth2.Config
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -38,26 +32,10 @@ func (a *API) URI() string {
 }
 
 // Run starts a server listening on the given serveURI
-func (a *API) Run(clientID string, clientSecret string) error {
-	err := a.validate(clientID, clientSecret)
-	if err != nil {
-		return err
-	}
-
+func (a *API) Run() error {
+	a.OAuth2Config.RedirectURL = fmt.Sprintf("%s%s", a.URI(), "/oauth2")
 	r := a.createRouter()
 	return http.ListenAndServe(fmt.Sprintf(":%v", a.ServePort), handlers.LoggingHandler(os.Stdout, handlers.CORS()(r)))
-}
-
-func (a *API) validate(clientID string, clientSecret string) error {
-	a.clientID = clientID
-	a.clientSecret = clientSecret
-	if strings.TrimSpace(clientID) == "" {
-		return errors.New("you must supply a non-empty client ID")
-	}
-	if strings.TrimSpace(clientSecret) == "" {
-		return errors.New("you must supply a non-empty client secret")
-	}
-	return nil
 }
 
 func (a *API) createRouter() *mux.Router {

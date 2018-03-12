@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,8 +9,10 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-community/go-cfenv"
+	oidc "github.com/coreos/go-oidc"
 	"github.com/pivotalservices/ignition/http"
 	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
 )
 
 type config struct {
@@ -18,44 +21,48 @@ type config struct {
 	domain       string
 	webRoot      string
 	scheme       string
-	authVariant  string
-	authURL      string
-	tokenURL     string
-	clientID     string
-	clientSecret string
-	authScopes   []string
+	oauth2Config *oauth2.Config
 }
 
 func main() {
-	c, err := buildConfig()
+
+	c, err := buildConfig(oidcEndpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	api := http.API{
-		WebRoot:     c.webRoot,
-		Scheme:      c.scheme,
-		Port:        c.port,
-		Domain:      c.domain,
-		ServePort:   c.servePort,
-		AuthVariant: c.authVariant,
-		AuthURL:     c.authURL,
-		TokenURL:    c.tokenURL,
-		AuthScopes:  c.authScopes,
+		WebRoot:      c.webRoot,
+		Scheme:       c.scheme,
+		Port:         c.port,
+		Domain:       c.domain,
+		ServePort:    c.servePort,
+		OAuth2Config: c.oauth2Config,
 	}
 	fmt.Println(fmt.Sprintf("Starting Server listening on %s", api.URI()))
-	log.Fatal(api.Run(c.clientID, c.clientSecret))
+	log.Fatal(api.Run())
 }
 
-func buildConfig() (*config, error) {
+func oidcEndpoint(ctx context.Context, issuer string) (*oauth2.Endpoint, error) {
+	provider, err := oidc.NewProvider(ctx, issuer)
+	if err != nil {
+		return nil, err
+	}
+	endpoint := provider.Endpoint()
+	return &endpoint, nil
+}
+
+func buildConfig(endpointFunc func(ctx context.Context, issuer string) (*oauth2.Endpoint, error)) (*config, error) {
 	c := &config{}
 	root, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
-	authScopes := os.Getenv("IGNITION_AUTH_SCOPES")
-	c.authScopes = strings.Split(authScopes, ",")
+	authVariant := os.Getenv("IGNITION_AUTH_VARIANT")
+	authIssuer := os.Getenv("IGNITION_AUTH_ISSUER")
+	clientID := os.Getenv("IGNITION_CLIENT_ID")
+	clientSecret := os.Getenv("IGNITION_CLIENT_SECRET")
 
 	if cfenv.IsRunningOnCF() {
 		env, err := cfenv.Current()
@@ -70,8 +77,7 @@ func buildConfig() (*config, error) {
 		}
 		c.domain = env.ApplicationURIs[0]
 		c.webRoot = root
-		c.authVariant = os.Getenv("IGNITION_AUTH_VARIANT")
-		switch strings.ToLower(strings.TrimSpace(c.authVariant)) {
+		switch strings.ToLower(strings.TrimSpace(authVariant)) {
 		case "p-identity":
 			service, err := env.Services.WithName("identity")
 			if err != nil {
@@ -81,23 +87,17 @@ func buildConfig() (*config, error) {
 			if !ok {
 				return nil, errors.New("could not retrieve the auth_domain; make sure you have created and bound a Single Sign On service instance with the name \"identity\"")
 			}
-			c.authURL = fmt.Sprintf("%s/oauth/authorize", authDomain)
-			c.tokenURL = fmt.Sprintf("%s/oauth/token", authDomain)
-			clientID, ok := service.CredentialString("client_id")
+			authIssuer = authDomain
+			clientid, ok := service.CredentialString("client_id")
 			if !ok {
 				return nil, errors.New("could not retrieve the client_id; make sure you have created and bound a Single Sign On service instance with the name \"identity\"")
 			}
-			c.clientID = clientID
-			clientSecret, ok := service.CredentialString("client_secret")
+			clientID = clientid
+			clientsecret, ok := service.CredentialString("client_secret")
 			if !ok {
 				return nil, errors.New("could not retrieve the client_secret; make sure you have created and bound a Single Sign On service instance with the name \"identity\"")
 			}
-			c.clientSecret = clientSecret
-		default:
-			c.authURL = os.Getenv("IGNITION_AUTH_URL")
-			c.tokenURL = os.Getenv("IGNITION_TOKEN_URL")
-			c.clientID = os.Getenv("IGNITION_CLIENT_ID")
-			c.clientSecret = os.Getenv("IGNITION_CLIENT_SECRET")
+			clientSecret = clientsecret
 		}
 	} else {
 		c.scheme = "http"
@@ -105,12 +105,18 @@ func buildConfig() (*config, error) {
 		c.port = 3000
 		c.domain = "localhost"
 		c.webRoot = filepath.Join(root, "web", "dist")
-		c.authVariant = os.Getenv("IGNITION_AUTH_VARIANT")
-		c.authURL = os.Getenv("IGNITION_AUTH_URL")
-		c.tokenURL = os.Getenv("IGNITION_TOKEN_URL")
-		c.clientID = os.Getenv("IGNITION_CLIENT_ID")
-		c.clientSecret = os.Getenv("IGNITION_CLIENT_SECRET")
 		c.scheme = "http"
 	}
+	endpoint, err := endpointFunc(context.Background(), authIssuer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config := &oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		Endpoint:     *endpoint,
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+	}
+	c.oauth2Config = config
 	return c, nil
 }

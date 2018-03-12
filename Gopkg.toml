@@ -37,3 +37,7 @@
 [[constraint]]
   branch = "master"
   name = "google.golang.org/api"
+
+[[constraint]]
+  branch = "v2"
+  name = "github.com/coreos/go-oidc"

@@ -8,10 +8,15 @@
   version = "v1.17.0"
 
 [[projects]]
+  branch = "v2"
+  name = "github.com/coreos/go-oidc"
+  packages = ["."]
+  revision = "065b426bd41667456c1a924468f507673629c46b"
+
+[[projects]]
   name = "github.com/dghubble/gologin"
   packages = [
     ".",
-    "google",
     "internal",
     "oauth2"
   ]
@@ -87,12 +92,30 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/pquerna/cachecontrol"
+  packages = [
+    ".",
+    "cacheobject"
+  ]
+  revision = "525d0eb5f91d30e3b1548de401b7ef9ea6898520"
+
+[[projects]]
+  branch = "master"
   name = "github.com/sclevine/spec"
   packages = [
     ".",
     "report"
   ]
   revision = "b2a18c83f7093235f63f9f6862449a8b68ff84a5"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = [
+    "ed25519",
+    "ed25519/internal/edwards25519"
+  ]
+  revision = "182114d582623c1caa54f73de9c7224e23a48487"
 
 [[projects]]
   branch = "master"
@@ -165,6 +188,16 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "gopkg.in/square/go-jose.v2"
+  packages = [
+    ".",
+    "cipher",
+    "json"
+  ]
+  revision = "6ee92191fea850cdcab9a18867abf5f521cdbadb"
+  version = "v2.1.4"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
@@ -173,6 +206,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "783b7f1cdde53eadf1e86436ff15f964ad1404e48ccf3f1abc83ff14ac9c072b"
+  inputs-digest = "39447c946cbc5760c0fc73ca1ee2377d1f5d0fa482669a7904f0d25649a6e08d"
   solver-name = "gps-cdcl"
   solver-version = 1
