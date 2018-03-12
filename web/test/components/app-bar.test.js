@@ -1,7 +1,6 @@
 import React from 'react'
 import {shallow} from 'enzyme'
 import AppBar from './../../src/components/app-bar'
-import {prettyPrint} from 'html'
 
 test('app bar renders', () => {
   const appBar = shallow(<AppBar />)
