@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,12 +10,24 @@ import (
 	"strings"
 
 	"github.com/dghubble/gologin"
+	"github.com/dghubble/gologin/google"
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
+	"github.com/dghubble/sessions"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
+
+const (
+	sessionTokenKey   = "token"
+	sessionProfileKey = "profile"
+	sessionEmailKey   = "email"
+	sessionName       = "ignition"
+	sessionSecret     = "cEM42gcY.rJaCmnZWay>hTXoAqYudMeY"
+)
+
+var sessionStore = sessions.NewCookieStore([]byte(sessionSecret), nil)
 
 // API is the Ignition web app
 type API struct {
@@ -22,8 +35,11 @@ type API struct {
 	Port         int
 	ServePort    int
 	WebRoot      string
-	AuthDomain   string
 	Scheme       string
+	AuthVariant  string
+	AuthURL      string
+	TokenURL     string
+	AuthScopes   []string
 	clientID     string
 	clientSecret string
 }
@@ -70,13 +86,51 @@ func (a *API) createRouter() *mux.Router {
 		ClientID:     a.clientID,
 		ClientSecret: a.clientSecret,
 		RedirectURL:  fmt.Sprintf("%s%s", a.URI(), "/oauth2"),
-		Scopes:       []string{"user_attributes"},
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  fmt.Sprintf("%s/oauth/authorize", a.AuthDomain),
-			TokenURL: fmt.Sprintf("%s/oauth/token", a.AuthDomain),
+			AuthURL:  a.AuthURL,
+			TokenURL: a.TokenURL,
 		},
+		Scopes: a.AuthScopes,
 	}
 	stateConfig := gologin.DefaultCookieConfig
+	if a.Domain == "localhost" {
+		stateConfig = gologin.DebugOnlyCookieConfig
+	}
 	r.Handle("/login", dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(&c, nil))).Name("login")
+	r.Handle("/oauth2", dgoauth2.StateHandler(stateConfig, google.CallbackHandler(&c, IssueSession(), nil)))
 	return r
+}
+
+// IssueSession stores the user's authentication state and profile in the
+// session
+func IssueSession() http.Handler {
+	fn := func(w http.ResponseWriter, req *http.Request) {
+		googleUser, err := google.UserFromContext(req.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		token, err := dgoauth2.TokenFromContext(req.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		session := sessionStore.New(sessionName)
+		j, err := json.Marshal(googleUser)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		session.Values[sessionProfileKey] = string(j)
+		j, err = json.Marshal(token)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		session.Values[sessionTokenKey] = string(j)
+		session.Save(w)
+		http.Redirect(w, req, "/", http.StatusFound)
+	}
+	return http.HandlerFunc(fn)
 }

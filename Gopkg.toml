@@ -33,3 +33,7 @@
 [[constraint]]
   name = "github.com/dghubble/gologin"
   version = "2.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/api"
