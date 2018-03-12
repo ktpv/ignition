@@ -5,5 +5,9 @@ module.exports = merge(common, {
   devtool: 'inline-source-map',
   devServer: {
     contentBase: './dist'
+  },
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000
   }
 })
