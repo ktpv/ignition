@@ -20,3 +20,4 @@ vendor/
 /credentials
 .DS_Store
 debug*
+/yarn-error.log

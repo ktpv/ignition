@@ -5,40 +5,37 @@ import AppBar from 'material-ui/AppBar'
 import Toolbar from 'material-ui/Toolbar'
 import Typography from 'material-ui/Typography'
 import IconButton from 'material-ui/IconButton'
-import MenuIcon from 'material-ui-icons/Menu'
 import AccountCircle from 'material-ui-icons/AccountCircle'
-import Switch from 'material-ui/Switch'
-import { FormControlLabel, FormGroup } from 'material-ui/Form'
 import Menu, { MenuItem } from 'material-ui/Menu'
 
 const styles = {
   root: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   title: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   icon: {
-    flexShrink: 1,
+    flexShrink: 1
   },
   menuButton: {
     marginLeft: -12,
-    marginRight: 20,
+    marginRight: 20
   },
   userContainer: {
     display: 'flex',
-    alignItems: 'center',
-  },
+    alignItems: 'center'
+  }
 }
 
 class MenuAppBar extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     const {profile} = props
     this.state = {
       auth: true,
       anchorEl: null,
-      profile: profile,
+      profile: profile
     }
   }
 
@@ -58,26 +55,26 @@ class MenuAppBar extends React.Component {
     location.replace('/logout')
   }
 
-  componentDidMount() {
+  componentDidMount () {
     if (this.props && this.props.testing) {
       return
     }
-    fetch('/profile', {
+    window.fetch('/profile', {
       credentials: 'same-origin'
     }).then((response) => {
-        if(!response.ok) {
-          location.replace('/login')
-        }
-        return response.json()
-      })
+      if (!response.ok) {
+        window.location.replace('/login')
+      }
+      return response.json()
+    })
       .then((profile) => this.setState({profile}))
   }
 
-  render() {
+  render () {
     const { classes } = this.props
     const { anchorEl, profile } = this.state
     const open = Boolean(anchorEl)
-    let name = ""
+    let name = ''
     if (profile && profile.Name) {
       name = profile.Name
     }
@@ -86,33 +83,33 @@ class MenuAppBar extends React.Component {
       <div className={classes.root}>
         <AppBar position='static'>
           <Toolbar>
-            <Typography variant="title" color="inherit" className={classes.title}>
+            <Typography variant='title' color='inherit' className={classes.title}>
               Pivotal Ignition
             </Typography>
             {profile && (
               <div className={classes.userContainer}>
-                <Typography variant="title" color="inherit" className={classes.name}>
+                <Typography variant='title' color='inherit' className={classes.name}>
                   {name}
                 </Typography>
                 <IconButton
                   aria-owns={open ? 'menu-appbar' : null}
-                  aria-haspopup="true"
+                  aria-haspopup='true'
                   onClick={this.handleMenu}
-                  color="inherit"
+                  color='inherit'
                   className={classes.icon}
                 >
                   <AccountCircle />
                 </IconButton>
                 <Menu
-                  id="menu-appbar"
+                  id='menu-appbar'
                   anchorEl={anchorEl}
                   anchorOrigin={{
                     vertical: 'top',
-                    horizontal: 'right',
+                    horizontal: 'right'
                   }}
                   transformOrigin={{
                     vertical: 'top',
-                    horizontal: 'right',
+                    horizontal: 'right'
                   }}
                   open={open}
                   onClose={this.handleClose}
@@ -129,7 +126,7 @@ class MenuAppBar extends React.Component {
 }
 
 MenuAppBar.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 }
 
 MenuAppBar.propTypes = {
