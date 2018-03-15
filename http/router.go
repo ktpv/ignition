@@ -16,13 +16,14 @@ import (
 
 // API is the Ignition web app
 type API struct {
-	Domain       string
-	Port         int
-	ServePort    int
-	WebRoot      string
-	Scheme       string
-	OAuth2Config *oauth2.Config
-	Fetcher      user.Fetcher
+	AuthorizedDomain string
+	Domain           string
+	Port             int
+	ServePort        int
+	WebRoot          string
+	Scheme           string
+	OAuth2Config     *oauth2.Config
+	Fetcher          user.Fetcher
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -47,7 +48,7 @@ func (a *API) createRouter() *mux.Router {
 		http.ServeFile(w, req, filepath.Join(a.WebRoot, "index.html"))
 	}))).Name("index")
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
-	r.Handle("/profile", ensureHTTPS(ContextFromSession(Authorize(profileHandler()))))
+	r.Handle("/profile", ensureHTTPS(ContextFromSession(Authorize(profileHandler(), a.AuthorizedDomain))))
 	a.handleAuth(r)
 	r.Handle("/debug/vars", http.DefaultServeMux)
 	return r

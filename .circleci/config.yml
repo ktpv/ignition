@@ -96,6 +96,7 @@ jobs:
             echo 'ignition.tar.gz' > .cfignore
             ./../cf login -a $CF_API -u $CF_USERNAME -p "$CF_PASSWORD" -o $CF_ORG -s $CF_SPACE
             ./../cf push ignition -f /go/src/github.com/pivotalservices/ignition/manifests/ignition.yml
+            ./../cf push ignition-google -f /go/src/github.com/pivotalservices/ignition/manifests/ignition-google.yml
 workflows:
   version: 2
 

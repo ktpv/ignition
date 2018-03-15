@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dghubble/gologin"
@@ -44,7 +45,7 @@ func (a *API) handleAuth(r *mux.Router) {
 }
 
 // Authorize guards access to protected resources by inspecting the user's token
-func Authorize(next http.Handler) http.Handler {
+func Authorize(next http.Handler, domain string) http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		token, ok := req.Context().Value(contextTokenKey).(*oauth2.Token)
 		if !ok {
@@ -52,6 +53,15 @@ func Authorize(next http.Handler) http.Handler {
 			return
 		}
 		if token.Expiry.UTC().Sub(time.Now().UTC()) < 0 {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		profile, err := user.ProfileFromContext(req.Context())
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		if strings.TrimSpace(domain) != "" && !strings.HasSuffix(strings.ToLower(profile.Email), domain) {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}

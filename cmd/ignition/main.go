@@ -16,16 +16,17 @@ import (
 )
 
 type config struct {
-	port         int
-	servePort    int
-	domain       string
-	webRoot      string
-	scheme       string
-	issuerURL    string
-	clientID     string
-	jwksURL      string
-	oauth2Config *oauth2.Config
-	fetcher      user.Fetcher
+	port             int
+	servePort        int
+	domain           string
+	webRoot          string
+	scheme           string
+	issuerURL        string
+	clientID         string
+	jwksURL          string
+	authorizedDomain string
+	oauth2Config     *oauth2.Config
+	fetcher          user.Fetcher
 }
 
 func main() {
@@ -36,12 +37,13 @@ func main() {
 	}
 
 	api := http.API{
-		WebRoot:      c.webRoot,
-		Scheme:       c.scheme,
-		Port:         c.port,
-		Domain:       c.domain,
-		ServePort:    c.servePort,
-		OAuth2Config: c.oauth2Config,
+		WebRoot:          c.webRoot,
+		Scheme:           c.scheme,
+		Port:             c.port,
+		Domain:           c.domain,
+		ServePort:        c.servePort,
+		OAuth2Config:     c.oauth2Config,
+		AuthorizedDomain: c.authorizedDomain,
 		Fetcher: &openid.Fetcher{
 			Verifier: openid.NewVerifier(c.issuerURL, c.clientID, c.jwksURL),
 		},
@@ -118,5 +120,6 @@ func buildConfig() (*config, error) {
 	c.jwksURL = jwksURL
 	c.issuerURL = issuerURL
 	c.clientID = clientID
+	c.authorizedDomain = os.Getenv("IGNITION_AUTHORIZED_DOMAIN")
 	return c, nil
 }
