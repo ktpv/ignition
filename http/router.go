@@ -1,6 +1,7 @@
 package http
 
 import (
+	_ "expvar" // metrics
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/pivotalservices/ignition/user"
 	"golang.org/x/oauth2"
 )
 
@@ -20,6 +22,7 @@ type API struct {
 	WebRoot      string
 	Scheme       string
 	OAuth2Config *oauth2.Config
+	Fetcher      user.Fetcher
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -46,5 +49,6 @@ func (a *API) createRouter() *mux.Router {
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
 	r.Handle("/profile", ensureHTTPS(ContextFromSession(Authorize(profileHandler()))))
 	a.handleAuth(r)
+	r.Handle("/debug/vars", http.DefaultServeMux)
 	return r
 }

@@ -1,10 +1,12 @@
 package http
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -14,7 +16,7 @@ import (
 	"github.com/dghubble/sessions"
 	"github.com/gorilla/mux"
 	"github.com/pivotalservices/ignition/user"
-	"github.com/pivotalservices/ignition/user/google"
+	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
 
@@ -37,7 +39,7 @@ func (a *API) handleAuth(r *mux.Router) {
 		stateConfig = gologin.DebugOnlyCookieConfig
 	}
 	r.Handle("/login", ensureHTTPS(dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(a.OAuth2Config, nil)))).Name("login")
-	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, IssueSession(), nil)))).Name("oauth2")
+	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, a.Fetcher, IssueSession(), nil)))).Name("oauth2")
 	r.Handle("/logout", ensureHTTPS(http.HandlerFunc(LogoutHandler))).Name("logout")
 }
 
@@ -56,6 +58,28 @@ func Authorize(next http.Handler) http.Handler {
 		next.ServeHTTP(w, req)
 	}
 	return http.HandlerFunc(fn)
+}
+
+// Write gzipped data to a Writer
+func gzipWrite(w io.Writer, data []byte) error {
+	// Write gzipped data to the client
+	gw, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+	defer gw.Close()
+	gw.Write(data)
+	return err
+}
+
+// Write gunzipped data to a Writer
+func gunzipWrite(w io.Writer, data []byte) error {
+	// Write gzipped data to the client
+	gr, err := gzip.NewReader(bytes.NewBuffer(data))
+	defer gr.Close()
+	data, err = ioutil.ReadAll(gr)
+	if err != nil {
+		return err
+	}
+	w.Write(data)
+	return nil
 }
 
 // IssueSession stores the user's authentication state and profile in the
@@ -85,7 +109,13 @@ func IssueSession() http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		session.Values[sessionTokenKey] = string(j)
+		var buf bytes.Buffer
+		err = gzipWrite(&buf, []byte(j))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		session.Values[sessionTokenKey] = string(buf.String())
 		session.Save(w)
 		http.Redirect(w, req, "/", http.StatusFound)
 	}
@@ -107,11 +137,17 @@ func newContextFromSession(ctx context.Context, req *http.Request) context.Conte
 		return ctx // No session
 	}
 	rawToken, ok := session.Values[sessionTokenKey].(string)
+	var buf bytes.Buffer
+	err = gunzipWrite(&buf, []byte(rawToken))
+	if err != nil {
+		log.Println(err)
+		return ctx
+	}
 	if ok {
 		token := oauth2.Token{}
-		err = json.Unmarshal([]byte(rawToken), &token)
+		err = json.Unmarshal(buf.Bytes(), &token)
 		if err != nil {
-			log.Println(err.Error())
+			log.Println(err)
 		}
 		ctx = context.WithValue(ctx, contextTokenKey, &token)
 	}
@@ -121,7 +157,7 @@ func newContextFromSession(ctx context.Context, req *http.Request) context.Conte
 		profile := user.Profile{}
 		err = json.Unmarshal([]byte(rawProfile), &profile)
 		if err != nil {
-			log.Println(err.Error())
+			log.Println(err)
 		}
 		ctx = user.WithProfile(ctx, &profile)
 	}
@@ -132,8 +168,8 @@ func newContextFromSession(ctx context.Context, req *http.Request) context.Conte
 // CallbackHandler handles Google redirection URI requests and adds the Google
 // access token and Userinfoplus to the ctx. If authentication succeeds,
 // handling delegates to the success handler, otherwise to the failure handler.
-func CallbackHandler(config *oauth2.Config, success, failure http.Handler) http.Handler {
-	success = oauth2Handler(config, &google.Fetcher{}, success, failure)
+func CallbackHandler(config *oauth2.Config, fetcher user.Fetcher, success, failure http.Handler) http.Handler {
+	success = oauth2Handler(config, fetcher, success, failure)
 	return dgoauth2.CallbackHandler(config, success, failure)
 }
 
@@ -170,7 +206,7 @@ func oauth2Handler(config *oauth2.Config, f user.Fetcher, success, failure http.
 // http.Response, or error are unexpected. Returns nil if they are valid.
 func validateResponse(profile *user.Profile, err error) error {
 	if err != nil {
-		return errors.New("unable to get Profile")
+		return errors.Wrap(err, "unable to get Profile")
 	}
 	if profile == nil || profile.AccountName == "" {
 		return errors.New("could not validate Profile")
