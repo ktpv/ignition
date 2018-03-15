@@ -39,7 +39,7 @@ func (a *API) handleAuth(r *mux.Router) {
 		stateConfig = gologin.DebugOnlyCookieConfig
 	}
 	r.Handle("/login", ensureHTTPS(dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(a.OAuth2Config, nil)))).Name("login")
-	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, a.Fetcher, IssueSession(), nil)))).Name("oauth2")
+	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, a.Fetcher, IssueSession(), http.HandlerFunc(LogoutHandler))))).Name("oauth2")
 	r.Handle("/logout", ensureHTTPS(http.HandlerFunc(LogoutHandler))).Name("logout")
 }
 
