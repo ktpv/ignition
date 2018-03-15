@@ -62,7 +62,7 @@ func Authorize(next http.Handler, domain string) http.Handler {
 			return
 		}
 		if strings.TrimSpace(domain) != "" && !strings.HasSuffix(strings.ToLower(profile.Email), domain) {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}
 		next.ServeHTTP(w, req)

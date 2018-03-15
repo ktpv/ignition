@@ -50,6 +50,9 @@ func (a *API) createRouter() *mux.Router {
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
 	r.Handle("/profile", ensureHTTPS(ContextFromSession(Authorize(profileHandler(), a.AuthorizedDomain))))
 	a.handleAuth(r)
+	r.HandleFunc("/403", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+	})
 	r.Handle("/debug/vars", http.DefaultServeMux)
 	return r
 }

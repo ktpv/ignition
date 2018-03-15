@@ -63,7 +63,12 @@ class MenuAppBar extends React.Component {
       credentials: 'same-origin'
     }).then((response) => {
       if (!response.ok) {
-        window.location.replace('/login')
+        if (response.status === 401) {
+          window.location.replace('/login')
+          return
+        }
+        window.location.replace('/' + response.status)
+        return
       }
       return response.json()
     })
