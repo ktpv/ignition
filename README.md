@@ -35,6 +35,35 @@ We welcome pull requests to add additional functionality or fix issues. Please f
 1. Push your feature branch to your fork: `git push fork your initials-your-feature-name` (e.g. `git push fork jf-add-logo`)
 1. Make a pull request: `https://github.com/pivotalservices/ignition/compare/master...YOUR-USERNAME-HERE:your-initials-your-feature-name`
 
+### Configure the application
+#### Authentication
+The app can be configured to authenticate against google or the PCF SSO tile.
+
+To authenticate against google:
+1. [Generate a goolge OAuth2 client id and secret](https://console.developers.google.com/apis/credentials)
+1. Set the following environment variables
+   * IGNITION_AUTH_SCOPES="openid,email,profile"
+   * IGNITION_AUTH_URL="https://accounts.google.com/o/oauth2/v2/auth"
+   * IGNITION_AUTH_VARIANT="google"
+   * IGNITION_CLIENT_ID="[client id generated from google]"
+   * IGNITION_CLIENT_SECRET="[client secret generated from google]"
+   * IGNITION_TOKEN_URL="https://www.googleapis.com/oauth2/v4/token"
+   * IGNITION_AUTH_ISSUER="https://accounts.google.com"
+   * IGNITION_AUTHORIZED_DOMAIN="@pivotal.io"
+   * IGNITION_JWKS_URL="https://www.googleapis.com/oauth2/v3/certs"
+   * IGNITION_ISSUER_URL="https://accounts.google.com"
+
+To authenticate against PCF SSO tile:
+1. Configure the PCF SSO tile in your PCF foundation http://docs.pivotal.io/p-identity/
+1. Set the following environment variables
+   * IGNITION_AUTH_VARIANT: "p-identity"
+   * IGNITION_ISSUER_URL: "https://ignition.uaa.run.pcfbeta.io/oauth/token"
+   * IGNITION_AUTH_URL: "https://ignition.login.run.pcfbeta.io/oauth/authorize"
+   * IGNITION_TOKEN_URL: "https://ignition.login.run.pcfbeta.io/oauth/token"
+   * IGNITION_JWKS_URL: "https://ignition.login.run.pcfbeta.io/token_keys"
+   * IGNITION_AUTH_SCOPES: "openid,profile,user_attributes"
+   * IGNITION_AUTHORIZED_DOMAIN: "@pivotal.io"
+
 ### Run the application locally
 
 1. Make sure you're in the repository root directory: `cd $GOPATH/src/github.com/pivotalservices/ignition`
