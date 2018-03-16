@@ -33,9 +33,8 @@ jobs:
       - run:
           working_directory: web
           command: |
-            sudo npm install --quiet -g yarn
             yarn install
-
+            
       - save_cache:
           paths:
             - web/node_modules
