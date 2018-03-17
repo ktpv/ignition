@@ -3,22 +3,20 @@
 
 A landing page for developers to self-service their way onto your Pivotal Cloud Foundry (PCF) deployment(s).
 
-* Authenticates the user via OAuth2
+* Authenticates the user via OpenID Connect (which implicitly uses OAuth 2.0)
 * Allows the user to access Apps Manager and view their personal PCF org
 
 ### Contribute
 
-This application is a combination of a JavaScript single-page app (built with React) and a Go web app. The JavaScript app is built into a javascript bundle, that the Go web app serves up. The Go web app also provides an API that the JavaScript app uses to function.
+This application is a combination of a JavaScript single-page app (built with React) and a Go web app. The JavaScript app is built into a JavaScript bundle that the Go web app serves up. The Go web app also provides an API that the JavaScript app uses to function.
 
 #### Yak Shaving (Developer Setup)
 
 This project uses [`dep`](https://github.com/golang/dep) and [`yarn`](https://yarnpkg.com) for dependency management.
 
-Make sure you have `dep` and `yarn` installed, and then run:
+The following setup script shows how to get your MacOS workstation ready for `ignition` development. Don't just blindly execute shell scripts though; [take a thorough look through it](https://raw.githubusercontent.com/pivotalservices/ignition/master/setup.sh) and then run the following:
 
 > `curl -o- https://raw.githubusercontent.com/pivotalservices/ignition/master/setup.sh | bash`
-
-Don't just blindly execute shell scripts though, take a look at it and feel free to download it locally and run it after thorough inspection.
 
 #### Add A Feature / Fix An Issue
 
@@ -76,3 +74,7 @@ To authenticate against PCF SSO tile:
 1. Make sure you're in the repository root directory: `cd $GOPATH/src/github.com/pivotalservices/ignition`
 1. Run go tests: `go test ./...`
 1. Run web tests: `pushd web && yarn ci && popd`
+
+### Support
+
+`ignition` is a community supported Pivotal Cloud Foundry add-on. [Opening an issue](https://github.com/pivotalservices/ignition/issues/new) for questions, feature requests and/or bugs is the best path to getting "support". We strive to be active in keeping this tool working and meeting your needs in a timely fashion.
