@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
+	"github.com/sclevine/spec/report"
 )
 
 func TestAPI(t *testing.T) {
@@ -25,5 +26,5 @@ func TestAPI(t *testing.T) {
 			nonexistent := r.GetRoute("nonexistent")
 			Expect(nonexistent).To(BeNil())
 		})
-	})
+	}, spec.Report(report.Terminal{}))
 }

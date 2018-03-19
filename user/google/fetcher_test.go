@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
+	"github.com/sclevine/spec/report"
 )
 
 func TestFetcher(t *testing.T) {
@@ -17,5 +18,5 @@ func TestFetcher(t *testing.T) {
 				Expect(true).To(BeTrue())
 			})
 		})
-	})
+	}, spec.Report(report.Terminal{}))
 }

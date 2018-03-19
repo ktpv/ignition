@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
+	"github.com/sclevine/spec/report"
 )
 
 func TestProfile(t *testing.T) {
@@ -33,5 +34,5 @@ func TestProfile(t *testing.T) {
 				Expect(nonexistent).To(BeNil())
 			})
 		})
-	})
+	}, spec.Report(report.Terminal{}))
 }
