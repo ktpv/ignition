@@ -14,7 +14,6 @@ import (
 
 	"github.com/dghubble/gologin"
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
-	"github.com/dghubble/sessions"
 	"github.com/gorilla/mux"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/pkg/errors"
@@ -28,11 +27,8 @@ const (
 	sessionProfileKey     = "profile"
 	sessionEmailKey       = "email"
 	sessionName           = "ignition"
-	sessionSecret         = "cEM42gcY.rJaCmnZWay>hTXoAqYudMeY"
 	contextTokenKey   key = iota
 )
-
-var sessionStore = sessions.NewCookieStore([]byte(sessionSecret), nil)
 
 func (a *API) handleAuth(r *mux.Router) {
 	stateConfig := gologin.DefaultCookieConfig
@@ -40,8 +36,8 @@ func (a *API) handleAuth(r *mux.Router) {
 		stateConfig = gologin.DebugOnlyCookieConfig
 	}
 	r.Handle("/login", ensureHTTPS(dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(a.OAuth2Config, nil)))).Name("login")
-	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, a.Fetcher, IssueSession(), http.HandlerFunc(LogoutHandler))))).Name("oauth2")
-	r.Handle("/logout", ensureHTTPS(http.HandlerFunc(LogoutHandler))).Name("logout")
+	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.OAuth2Config, a.Fetcher, a.IssueSession(), http.HandlerFunc(a.LogoutHandler))))).Name("oauth2")
+	r.Handle("/logout", ensureHTTPS(http.HandlerFunc(a.LogoutHandler))).Name("logout")
 }
 
 // Authorize guards access to protected resources by inspecting the user's token
@@ -94,7 +90,7 @@ func gunzipWrite(w io.Writer, data []byte) error {
 
 // IssueSession stores the user's authentication state and profile in the
 // session
-func IssueSession() http.Handler {
+func (a *API) IssueSession() http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		profile, err := user.ProfileFromContext(req.Context())
 		if err != nil {
@@ -107,7 +103,7 @@ func IssueSession() http.Handler {
 			return
 		}
 
-		session := sessionStore.New(sessionName)
+		session := a.SessionStore.New(sessionName)
 		j, err := json.Marshal(profile)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -133,16 +129,16 @@ func IssueSession() http.Handler {
 }
 
 // ContextFromSession populates the context with session information
-func ContextFromSession(next http.Handler) http.Handler {
+func (a *API) ContextFromSession(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
-		ctx := newContextFromSession(req.Context(), req)
+		ctx := a.newContextFromSession(req.Context(), req)
 		next.ServeHTTP(w, req.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)
 }
 
-func newContextFromSession(ctx context.Context, req *http.Request) context.Context {
-	session, err := sessionStore.Get(req, sessionName)
+func (a *API) newContextFromSession(ctx context.Context, req *http.Request) context.Context {
+	session, err := a.SessionStore.Get(req, sessionName)
 	if err != nil {
 		return ctx // No session
 	}
@@ -225,11 +221,11 @@ func validateResponse(profile *user.Profile, err error) error {
 }
 
 // LogoutHandler logs a user out and deletes their session
-func LogoutHandler(w http.ResponseWriter, req *http.Request) {
-	destroySession(w)
+func (a *API) LogoutHandler(w http.ResponseWriter, req *http.Request) {
+	a.destroySession(w)
 	http.Redirect(w, req, "/", http.StatusFound)
 }
 
-func destroySession(w http.ResponseWriter) {
-	sessionStore.Destroy(w, sessionName)
+func (a *API) destroySession(w http.ResponseWriter) {
+	a.SessionStore.Destroy(w, sessionName)
 }

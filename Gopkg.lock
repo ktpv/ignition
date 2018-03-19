@@ -60,6 +60,12 @@
   version = "v1.1.1"
 
 [[projects]]
+  name = "github.com/kelseyhightower/envconfig"
+  packages = ["."]
+  revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
@@ -206,6 +212,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "39447c946cbc5760c0fc73ca1ee2377d1f5d0fa482669a7904f0d25649a6e08d"
+  inputs-digest = "85b291f54b063b023a5a5ba16cc0f8135d2ac501c728f7ef4a515c469a87639a"
   solver-name = "gps-cdcl"
   solver-version = 1

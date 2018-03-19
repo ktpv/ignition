@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/dghubble/sessions"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pivotalservices/ignition/user"
@@ -17,6 +18,7 @@ import (
 // API is the Ignition web app
 type API struct {
 	AuthorizedDomain string
+	SessionSecret    string
 	Domain           string
 	Port             int
 	ServePort        int
@@ -24,6 +26,7 @@ type API struct {
 	Scheme           string
 	OAuth2Config     *oauth2.Config
 	Fetcher          user.Fetcher
+	SessionStore     sessions.Store
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -48,7 +51,7 @@ func (a *API) createRouter() *mux.Router {
 		http.ServeFile(w, req, filepath.Join(a.WebRoot, "index.html"))
 	}))).Name("index")
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
-	r.Handle("/profile", ensureHTTPS(ContextFromSession(Authorize(profileHandler(), a.AuthorizedDomain))))
+	r.Handle("/profile", ensureHTTPS(a.ContextFromSession(Authorize(profileHandler(), a.AuthorizedDomain))))
 	a.handleAuth(r)
 	r.HandleFunc("/403", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
