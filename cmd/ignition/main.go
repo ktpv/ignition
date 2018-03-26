@@ -9,6 +9,7 @@ import (
 	"github.com/cloudfoundry-community/go-cfenv"
 	"github.com/dghubble/sessions"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/pivotalservices/ignition/cloudfoundry"
 	"github.com/pivotalservices/ignition/http"
 	"github.com/pivotalservices/ignition/user/openid"
 	"github.com/pkg/errors"
@@ -16,21 +17,26 @@ import (
 )
 
 type envConfig struct {
-	AuthVariant      string   `envconfig:"auth_variant" default:"openid"`                        // IGNITION_AUTH_VARIANT
-	ClientID         string   `envconfig:"client_id"`                                            // IGNITION_CLIENT_ID
-	ClientSecret     string   `envconfig:"client_secret"`                                        // IGNITION_CLIENT_SECRET
-	AuthURL          string   `envconfig:"auth_url" required:"true"`                             // IGNITION_AUTH_URL
-	TokenURL         string   `envconfig:"token_url" required:"true"`                            // IGNITION_TOKEN_URL
-	JWKSURL          string   `envconfig:"jwks_url" required:"true"`                             // IGNITION_JWKS_URL
-	IssuerURL        string   `envconfig:"issuer_url" required:"true"`                           // IGNITION_ISSUER_URL
-	AuthScopes       []string `envconfig:"auth_scopes" default:"openid,profile,user_attributes"` // IGNITION_AUTH_SCOPES
-	AuthorizedDomain string   `envconfig:"authorized_domain" required:"true"`                    // IGNITION_AUTHORIZED_DOMAIN
-	SessionSecret    string   `envconfig:"session_secret" required:"true"`                       // IGNITION_SESSION_SECRET
-	Port             int      `envconfig:"port" default:"3000"`                                  // IGNITION_PORT
-	ServePort        int      `envconfig:"serve_port" default:"3000"`                            // IGNITION_SERVE_PORT
-	Domain           string   `envconfig:"domain" default:"localhost"`                           // IGNITION_DOMAIN
-	Scheme           string   `envconfig:"scheme" default:"http"`                                // IGNITION_SCHEME
-	WebRoot          string   `envconfig:"web_root"`                                             // IGNITION_WEB_ROOT
+	AuthVariant       string   `envconfig:"auth_variant" default:"openid"`                        // IGNITION_AUTH_VARIANT
+	ClientID          string   `envconfig:"client_id"`                                            // IGNITION_CLIENT_ID
+	ClientSecret      string   `envconfig:"client_secret"`                                        // IGNITION_CLIENT_SECRET
+	AuthURL           string   `envconfig:"auth_url" required:"true"`                             // IGNITION_AUTH_URL
+	TokenURL          string   `envconfig:"token_url" required:"true"`                            // IGNITION_TOKEN_URL
+	JWKSURL           string   `envconfig:"jwks_url" required:"true"`                             // IGNITION_JWKS_URL
+	IssuerURL         string   `envconfig:"issuer_url" required:"true"`                           // IGNITION_ISSUER_URL
+	AuthScopes        []string `envconfig:"auth_scopes" default:"openid,profile,user_attributes"` // IGNITION_AUTH_SCOPES
+	AuthorizedDomain  string   `envconfig:"authorized_domain" required:"true"`                    // IGNITION_AUTHORIZED_DOMAIN
+	SessionSecret     string   `envconfig:"session_secret" required:"true"`                       // IGNITION_SESSION_SECRET
+	Port              int      `envconfig:"port" default:"3000"`                                  // IGNITION_PORT
+	ServePort         int      `envconfig:"serve_port" default:"3000"`                            // IGNITION_SERVE_PORT
+	Domain            string   `envconfig:"domain" default:"localhost"`                           // IGNITION_DOMAIN
+	Scheme            string   `envconfig:"scheme" default:"http"`                                // IGNITION_SCHEME
+	WebRoot           string   `envconfig:"web_root"`                                             // IGNITION_WEB_ROOT
+	CCAPIURL          string   `envconfig:"ccapi_url" required:"true"`                            // IGNITION_CCAPI_URL
+	CCAPIClientID     string   `envconfig:"ccapi_client_id" default:"cf"`                         // IGNITION_CCAPI_CLIENT_ID
+	CCAPIClientSecret string   `envconfig:"ccapi_client_secret" default:""`                       // IGNITION_CCAPI_CLIENT_SECRET
+	CCAPIUsername     string   `envconfig:"ccapi_username" required:"true"`                       // IGNITION_CCAPI_USERNAME
+	CCAPIPassword     string   `envconfig:"ccapi_password" required:"true"`                       // IGNITION_CCAPI_PASSWORD
 }
 
 func main() {
@@ -38,6 +44,15 @@ func main() {
 	api, err := NewAPI()
 	if err != nil {
 		log.Fatal(err)
+	}
+	a := cloudfoundry.API{URI: api.APIURL}
+	info, err := a.Info()
+	if err != nil {
+		log.Fatal(err)
+	}
+	api.APIConfig.Endpoint = oauth2.Endpoint{
+		AuthURL:  info.AuthorizationEndpoint,
+		TokenURL: info.TokenEndpoint,
 	}
 	log.Printf("Starting Server listening on %s\n", api.URI())
 	log.Fatal(api.Run())
@@ -108,7 +123,8 @@ func NewAPI() (*http.API, error) {
 		Port:      c.Port,
 		Domain:    c.Domain,
 		ServePort: c.ServePort,
-		OAuth2Config: &oauth2.Config{
+		APIURL:    c.CCAPIURL,
+		UserConfig: &oauth2.Config{
 			ClientID:     c.ClientID,
 			ClientSecret: c.ClientSecret,
 			Endpoint: oauth2.Endpoint{
@@ -116,6 +132,11 @@ func NewAPI() (*http.API, error) {
 				TokenURL: c.TokenURL,
 			},
 			Scopes: c.AuthScopes,
+		},
+		APIConfig: &oauth2.Config{
+			ClientID:     c.CCAPIClientID,
+			ClientSecret: c.CCAPIClientSecret,
+			Scopes:       []string{"cloud_controller.admin"},
 		},
 		AuthorizedDomain: c.AuthorizedDomain,
 		Fetcher: &openid.Fetcher{

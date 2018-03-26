@@ -1,0 +1,17 @@
+{
+  "name": "",
+  "build": "",
+  "support": "https://support.pivotal.io",
+  "version": 0,
+  "description": "",
+  "authorization_endpoint": "https://login.run.pcfbeta.io",
+  "token_endpoint": "https://uaa.run.pcfbeta.io",
+  "min_cli_version": "6.23.0",
+  "min_recommended_cli_version": "6.23.0",
+  "api_version": "2.103.0",
+  "app_ssh_endpoint": "ssh.run.pcfbeta.io:2222",
+  "app_ssh_host_key_fingerprint": "00:f3:8b:eb:a8:d2:13:46:50:a1:02:49:d4:32:00:b8",
+  "app_ssh_oauth_client": "ssh-proxy",
+  "doppler_logging_endpoint": "wss://doppler.run.pcfbeta.io:443",
+  "routing_endpoint": "https://api.run.pcfbeta.io/routing"
+}

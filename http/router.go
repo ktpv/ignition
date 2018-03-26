@@ -24,7 +24,9 @@ type API struct {
 	ServePort        int
 	WebRoot          string
 	Scheme           string
-	OAuth2Config     *oauth2.Config
+	APIURL           string
+	UserConfig       *oauth2.Config
+	APIConfig        *oauth2.Config
 	Fetcher          user.Fetcher
 	SessionStore     sessions.Store
 }
@@ -40,7 +42,7 @@ func (a *API) URI() string {
 
 // Run starts a server listening on the given serveURI
 func (a *API) Run() error {
-	a.OAuth2Config.RedirectURL = fmt.Sprintf("%s%s", a.URI(), "/oauth2")
+	a.UserConfig.RedirectURL = fmt.Sprintf("%s%s", a.URI(), "/oauth2")
 	r := a.createRouter()
 	return http.ListenAndServe(fmt.Sprintf(":%v", a.ServePort), handlers.LoggingHandler(os.Stdout, handlers.CORS()(r)))
 }

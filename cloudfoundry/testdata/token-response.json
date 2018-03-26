@@ -1,0 +1,8 @@
+{
+  "access_token": "test-token",
+  "token_type": "bearer",
+  "refresh_token": "test-refresh-token",
+  "expires_in": 7199,
+  "scope": "cloud_controller.admin cloud_controller.write doppler.firehose openid scim.read uaa.user cloud_controller.read password.write scim.write",
+  "jti": "abcdefg"
+}

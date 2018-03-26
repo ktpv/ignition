@@ -67,6 +67,11 @@ func TestIgnitionMain(t *testing.T) {
 			os.Setenv("IGNITION_DOMAIN", domain)
 			os.Setenv("IGNITION_SCHEME", scheme)
 			os.Setenv("IGNITION_WEB_ROOT", webRoot)
+			os.Unsetenv("IGNITION_CCAPI_URL")
+			os.Unsetenv("IGNITION_CCAPI_CLIENT_ID")
+			os.Unsetenv("IGNITION_CCAPI_CLIENT_SECRET")
+			os.Unsetenv("IGNITION_CCAPI_USERNAME")
+			os.Unsetenv("IGNITION_CCAPI_PASSWORD")
 			os.Unsetenv("VCAP_APPLICATION")
 			os.Unsetenv("VCAP_SERVICES")
 			os.Unsetenv("PORT")
@@ -89,6 +94,11 @@ func TestIgnitionMain(t *testing.T) {
 				os.Setenv("IGNITION_DOMAIN", "")
 				os.Setenv("IGNITION_SCHEME", "")
 				os.Setenv("IGNITION_WEB_ROOT", "")
+				os.Setenv("IGNITION_CCAPI_URL", "")
+				os.Setenv("IGNITION_CCAPI_CLIENT_ID", "")
+				os.Setenv("IGNITION_CCAPI_CLIENT_SECRET", "")
+				os.Setenv("IGNITION_CCAPI_USERNAME", "")
+				os.Setenv("IGNITION_CCAPI_PASSWORD", "")
 			})
 
 			it("returns an error", func() {
@@ -110,6 +120,9 @@ func TestIgnitionMain(t *testing.T) {
 				os.Unsetenv("IGNITION_AUTH_SCOPES")
 				os.Setenv("IGNITION_AUTHORIZED_DOMAIN", "test-ignition-authorized-domain")
 				os.Setenv("IGNITION_SESSION_SECRET", "test-ignition-session-secret")
+				os.Setenv("IGNITION_CCAPI_URL", "https://example.com")
+				os.Setenv("IGNITION_CCAPI_USERNAME", "test-ccapi-username")
+				os.Setenv("IGNITION_CCAPI_PASSWORD", "test-ccapi-password")
 				os.Unsetenv("IGNITION_PORT")
 				os.Unsetenv("IGNITION_SERVE_PORT")
 				os.Unsetenv("IGNITION_DOMAIN")
@@ -123,6 +136,13 @@ func TestIgnitionMain(t *testing.T) {
 				Expect(api).NotTo(BeNil())
 			})
 
+			it("fails if the ccapi url is empty", func() {
+				os.Unsetenv("IGNITION_CCAPI_URL")
+				api, err := NewAPI()
+				Expect(err).To(HaveOccurred())
+				Expect(api).To(BeNil())
+			})
+
 			it("fails if the client id is empty", func() {
 				os.Unsetenv("IGNITION_CLIENT_ID")
 				api, err := NewAPI()
@@ -130,8 +150,30 @@ func TestIgnitionMain(t *testing.T) {
 				Expect(api).To(BeNil())
 			})
 
+			it("defaults the ccapi client id and secret to default values", func() {
+				api, err := NewAPI()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(api).NotTo(BeNil())
+				Expect(api.APIConfig.ClientID).To(Equal("cf"))
+				Expect(api.APIConfig.ClientSecret).To(Equal(""))
+			})
+
+			it("fails if the ccapi username is empty", func() {
+				os.Unsetenv("IGNITION_CCAPI_USERNAME")
+				api, err := NewAPI()
+				Expect(err).To(HaveOccurred())
+				Expect(api).To(BeNil())
+			})
+
 			it("fails if the client secret is empty", func() {
 				os.Unsetenv("IGNITION_CLIENT_SECRET")
+				api, err := NewAPI()
+				Expect(err).To(HaveOccurred())
+				Expect(api).To(BeNil())
+			})
+
+			it("fails if the ccapi password is empty", func() {
+				os.Unsetenv("IGNITION_CCAPI_PASSWORD")
 				api, err := NewAPI()
 				Expect(err).To(HaveOccurred())
 				Expect(api).To(BeNil())
@@ -265,8 +307,8 @@ func TestIgnitionMain(t *testing.T) {
 						api, err := NewAPI()
 						Expect(err).NotTo(HaveOccurred())
 						Expect(api).NotTo(BeNil())
-						Expect(api.OAuth2Config.ClientID).To(Equal("test-cf-client-id"))
-						Expect(api.OAuth2Config.ClientSecret).To(Equal("test-cf-client-secret"))
+						Expect(api.UserConfig.ClientID).To(Equal("test-cf-client-id"))
+						Expect(api.UserConfig.ClientSecret).To(Equal("test-cf-client-secret"))
 					})
 				})
 			})
@@ -283,41 +325,15 @@ func TestIgnitionMain(t *testing.T) {
 					api, err := NewAPI()
 					Expect(err).NotTo(HaveOccurred())
 					Expect(api).NotTo(BeNil())
-					Expect(api.OAuth2Config.ClientID).To(Equal("test-ignition-client-id"))
+					Expect(api.UserConfig.ClientID).To(Equal("test-ignition-client-id"))
 				})
 
 				it("uses the correct client secret", func() {
 					api, err := NewAPI()
 					Expect(err).NotTo(HaveOccurred())
 					Expect(api).NotTo(BeNil())
-					Expect(api.OAuth2Config.ClientSecret).To(Equal("test-ignition-client-secret"))
+					Expect(api.UserConfig.ClientSecret).To(Equal("test-ignition-client-secret"))
 				})
-			})
-		})
-
-		when("the environment is not empty", func() {
-			it.Before(func() {
-				os.Setenv("IGNITION_AUTH_VARIANT", "test-ignition-auth-variant")
-				os.Setenv("IGNITION_CLIENT_ID", "test-ignition-client-id")
-				os.Setenv("IGNITION_CLIENT_SECRET", "test-ignition-client-secret")
-				os.Setenv("IGNITION_AUTH_URL", "test-ignition-auth-url")
-				os.Setenv("IGNITION_TOKEN_URL", "test-ignition-token-url")
-				os.Setenv("IGNITION_JWKS_URL", "test-ignition-jwks-url")
-				os.Setenv("IGNITION_ISSUER_URL", "test-ignition-issuer-url")
-				os.Setenv("IGNITION_AUTH_SCOPES", "test-ignition-auth-scopes")
-				os.Setenv("IGNITION_AUTHORIZED_DOMAIN", "test-ignition-authorized-domain")
-				os.Setenv("IGNITION_SESSION_SECRET", "test-ignition-session-secret")
-				os.Setenv("IGNITION_PORT", "4321")
-				os.Setenv("IGNITION_SERVE_PORT", "1234")
-				os.Setenv("IGNITION_DOMAIN", "test-ignition-domain")
-				os.Setenv("IGNITION_SCHEME", "test-ignition-scheme")
-				os.Setenv("IGNITION_WEB_ROOT", "test-ignition-web-root")
-			})
-
-			it("does not return an error", func() {
-				api, err := NewAPI()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(api).NotTo(BeNil())
 			})
 		})
 	}, spec.Report(report.Terminal{}))
