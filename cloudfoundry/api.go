@@ -19,8 +19,8 @@ type API struct {
 	ClientSecret string
 	Username     string
 	Password     string
-	config       *oauth2.Config
-	token        *oauth2.Token
+	Config       *oauth2.Config
+	Token        *oauth2.Token
 }
 
 // URL returns the URL representation of the URI
@@ -38,6 +38,13 @@ type login struct {
 		UAA   string `json:"uaa"`
 		Login string `json:"login"`
 	} `json:"links"`
+}
+
+func (a *API) ensureValidAuthentication() error {
+	if a.Token == nil || !a.Token.Valid() {
+		return a.Authenticate()
+	}
+	return nil
 }
 
 // Authenticate ensures that the API had a valid token that can be used for
@@ -63,7 +70,7 @@ func (a *API) Authenticate() error {
 		return errors.Wrap(err, fmt.Sprintf("could not decode response from URI: [%s]", i.AuthorizationEndpoint))
 	}
 
-	a.config = &oauth2.Config{
+	a.Config = &oauth2.Config{
 		ClientID:     a.ClientID,
 		ClientSecret: a.ClientSecret,
 		Endpoint: oauth2.Endpoint{
@@ -71,10 +78,10 @@ func (a *API) Authenticate() error {
 			TokenURL: fmt.Sprintf("%s/oauth/token", l.Links.Login),
 		},
 	}
-	t, err := a.config.PasswordCredentialsToken(context.Background(), a.Username, a.Password)
+	t, err := a.Config.PasswordCredentialsToken(context.Background(), a.Username, a.Password)
 	if err != nil {
 		return errors.Wrap(err, "error retrieving UAA token")
 	}
-	a.token = t
+	a.Token = t
 	return nil
 }

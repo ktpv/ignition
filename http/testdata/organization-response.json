@@ -1,0 +1,35 @@
+
+{
+	"total_results": 1,
+	"total_pages": 6,
+	"prev_url": null,
+	"next_url": "/v2/organizations?order-direction=asc&page=2&results-per-page=50",
+	"resources": [
+		{
+      "metadata": {
+        "guid": "38a7fbfc-c9a2-4c82-b17c-31846c3430ca",
+        "url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca",
+        "created_at": "2017-11-16T09:09:56Z",
+        "updated_at": "2017-11-16T09:09:57Z"
+      },
+      "entity": {
+        "name": "pivot-name",
+        "billing_enabled": false,
+        "quota_definition_guid": "1b4086a2-a237-4f25-b60b-f75f12b95c85",
+        "status": "active",
+        "default_isolation_segment_guid": "f82b86e5-c973-416b-a930-cc482338a083",
+        "isolation_segment_url": "/v3/isolation_segments?organization_guids=38a7fbfc-c9a2-4c82-b17c-31846c3430ca",
+        "quota_definition_url": "/v2/quota_definitions/1b4086a2-a237-4f25-b60b-f75f12b95c85",
+        "spaces_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/spaces",
+        "domains_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/domains",
+        "private_domains_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/private_domains",
+        "users_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/users",
+        "managers_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/managers",
+        "billing_managers_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/billing_managers",
+        "auditors_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/auditors",
+        "app_events_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/app_events",
+        "space_quota_definitions_url": "/v2/organizations/38a7fbfc-c9a2-4c82-b17c-31846c3430ca/space_quota_definitions"
+      }
+    }
+  ]
+}

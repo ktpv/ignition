@@ -1,14 +1,17 @@
 package cloudfoundry
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
+	"golang.org/x/oauth2"
 )
 
 func TestOrganization(t *testing.T) {
@@ -21,9 +24,12 @@ func TestOrganization(t *testing.T) {
 
 		when("the user has orgs", func() {
 			var s *httptest.Server
+			var authorizationHeader string
 
 			it.Before(func() {
+				authorizationHeader = ""
 				s = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					authorizationHeader = r.Header.Get("Authorization")
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusOK)
 					b := helperLoadBytes(t, "organization-response.json")
@@ -31,6 +37,18 @@ func TestOrganization(t *testing.T) {
 				}))
 				a = &API{
 					URI: s.URL,
+					Config: &oauth2.Config{
+						Endpoint: oauth2.Endpoint{
+							AuthURL:  fmt.Sprintf("%s/oauth/authorize", s.URL),
+							TokenURL: fmt.Sprintf("%s/oauth/token", s.URL),
+						},
+					},
+					Token: &oauth2.Token{
+						AccessToken:  "test-token",
+						RefreshToken: "test-refresh-token",
+						TokenType:    "bearer",
+						Expiry:       time.Now().Add(time.Hour * 24),
+					},
 				}
 			})
 
@@ -39,10 +57,11 @@ func TestOrganization(t *testing.T) {
 			})
 
 			it("should return the orgs", func() {
-				api, err := a.Orgs()
+				o, err := a.Organizations(context.Background())
+				Expect(authorizationHeader).To(Equal("Bearer test-token"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(api).NotTo(BeNil())
-				fmt.Println((*api)[0].Guid)
+				Expect(o).NotTo(BeNil())
+				Expect(len(o)).To(Equal(1))
 			})
 		})
 	}, spec.Report(report.Terminal{}))

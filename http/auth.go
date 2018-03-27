@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -155,7 +156,7 @@ func (a *API) newContextFromSession(ctx context.Context, req *http.Request) cont
 		if err != nil {
 			log.Println(err)
 		}
-		ctx = context.WithValue(ctx, contextTokenKey, &token)
+		ctx = WithToken(ctx, &token)
 	}
 
 	rawProfile, ok := session.Values[sessionProfileKey].(string)
@@ -169,6 +170,20 @@ func (a *API) newContextFromSession(ctx context.Context, req *http.Request) cont
 	}
 
 	return ctx
+}
+
+// TokenFromContext returns the Token from the ctx.
+func TokenFromContext(ctx context.Context) (*oauth2.Token, error) {
+	token, ok := ctx.Value(contextTokenKey).(*oauth2.Token)
+	if !ok {
+		return nil, fmt.Errorf("Context missing Token")
+	}
+	return token, nil
+}
+
+// WithToken returns a copy of ctx that stores the Token.
+func WithToken(ctx context.Context, token *oauth2.Token) context.Context {
+	return context.WithValue(ctx, contextTokenKey, token)
 }
 
 // CallbackHandler handles Google redirection URI requests and adds the Google

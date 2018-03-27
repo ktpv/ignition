@@ -45,14 +45,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	a := cloudfoundry.API{URI: api.APIURL}
-	info, err := a.Info()
+	// info, err := api.CCAPI.Info()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// e := oauth2.Endpoint{
+	// 	AuthURL:  info.AuthorizationEndpoint,
+	// 	TokenURL: info.TokenEndpoint,
+	// }
+	// api.CCAPI.Config.Endpoint = e
+	err = api.CCAPI.Authenticate()
 	if err != nil {
 		log.Fatal(err)
-	}
-	api.APIConfig.Endpoint = oauth2.Endpoint{
-		AuthURL:  info.AuthorizationEndpoint,
-		TokenURL: info.TokenEndpoint,
 	}
 	log.Printf("Starting Server listening on %s\n", api.URI())
 	log.Fatal(api.Run())
@@ -117,6 +121,12 @@ func NewAPI() (*http.API, error) {
 		return nil, errors.New("a client secret must be set")
 	}
 
+	apiconfig := &oauth2.Config{
+		ClientID:     c.CCAPIClientID,
+		ClientSecret: c.CCAPIClientSecret,
+		Scopes:       []string{"cloud_controller.admin"},
+	}
+
 	api := http.API{
 		WebRoot:   c.WebRoot,
 		Scheme:    c.Scheme,
@@ -133,16 +143,19 @@ func NewAPI() (*http.API, error) {
 			},
 			Scopes: c.AuthScopes,
 		},
-		APIConfig: &oauth2.Config{
-			ClientID:     c.CCAPIClientID,
-			ClientSecret: c.CCAPIClientSecret,
-			Scopes:       []string{"cloud_controller.admin"},
-		},
+		APIConfig:        apiconfig,
 		AuthorizedDomain: c.AuthorizedDomain,
 		Fetcher: &openid.Fetcher{
 			Verifier: openid.NewVerifier(c.IssuerURL, c.ClientID, c.JWKSURL),
 		},
 		SessionStore: sessions.NewCookieStore([]byte(c.SessionSecret), nil),
+		CCAPI: &cloudfoundry.API{
+			URI:          c.CCAPIURL,
+			ClientID:     c.CCAPIClientID,
+			ClientSecret: c.CCAPIClientSecret,
+			Username:     c.CCAPIUsername,
+			Password:     c.CCAPIPassword,
+		},
 	}
 	return &api, nil
 }
