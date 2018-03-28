@@ -1,23 +1,23 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Button from 'material-ui/Button';
+import React from 'react'
+import PropTypes from 'prop-types'
+import { withStyles } from 'material-ui/styles'
+import Button from 'material-ui/Button'
 
 const styles = theme => ({
   button: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing.unit
   },
   input: {
-    display: 'none',
-  },
-});
+    display: 'none'
+  }
+})
 
 class Body extends React.Component {
-  constructor(props){
-    super(props);
+  constructor (props) {
+    super(props)
     this.state = {
-      orgUrl: ""
-    };
+      orgUrl: ''
+    }
   }
 
   componentDidMount () {
@@ -27,31 +27,31 @@ class Body extends React.Component {
       .then(response => {
         console.log(response.url)
         this.setState({orgUrl: response.url})
-    })
+      })
   }
 
   handleOrgButtonClick = () => {
-      window.location = this.state.orgUrl;
+    window.location = this.state.orgUrl
   }
 
   render () {
-    const { classes } = this.props;
-    console.log("In render")
+    const { classes } = this.props
+    console.log('In render')
     return (
       <div >
         <Button
-          variant="raised"
+          variant='raised'
           className={classes.button}
           onClick={this.handleOrgButtonClick}>
                 Go to Orgs
         </Button>
       </div>
-    );
+    )
   }
 }
 
 Body.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
+  classes: PropTypes.object.isRequired
+}
 
-export default withStyles(styles)(Body);
+export default withStyles(styles)(Body)
