@@ -3,6 +3,7 @@ package openid
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	oidc "github.com/coreos/go-oidc"
 	"github.com/pivotalservices/ignition/user"
@@ -41,9 +42,14 @@ func (g *Fetcher) Profile(ctx context.Context, c *oauth2.Config, t *oauth2.Token
 		return nil, err
 	}
 
+	username := claims.UserName
+	if strings.TrimSpace(username) == "" {
+		username = claims.Email
+	}
+
 	return &user.Profile{
 		Email:       claims.Email,
-		AccountName: claims.UserName,
+		AccountName: username,
 		Name:        fmt.Sprintf("%s %s", claims.GivenName, claims.FamilyName),
 	}, nil
 }
