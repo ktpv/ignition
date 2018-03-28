@@ -43,7 +43,7 @@ class Body extends React.Component {
           variant='raised'
           className={classes.button}
           onClick={this.handleOrgButtonClick}>
-                Go to Orgs
+            View My Org
         </Button>
       </div>
     )

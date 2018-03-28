@@ -57,6 +57,8 @@ To authenticate against google:
   * IGNITION_CCAPI_URL="https://api.run.pcfbeta.io"
   * IGNITION_CCAPI_USERNAME="your-robot-username-here"
   * IGNITION_CCAPI_PASSWORD="your-robot-password-here"
+  * IGNITION_CCAPI_CLIENT_ID="cf"
+  * IGNITION_CCAPI_CLIENT_SECRET=""
 
 To authenticate against PCF SSO tile:
 1. Configure the PCF SSO tile in your PCF foundation http://docs.pivotal.io/p-identity/
@@ -75,6 +77,8 @@ To authenticate against PCF SSO tile:
   * IGNITION_CCAPI_URL="https://api.run.pcfbeta.io"
   * IGNITION_CCAPI_USERNAME="your-robot-username-here"
   * IGNITION_CCAPI_PASSWORD="your-robot-password-here"
+  * IGNITION_CCAPI_CLIENT_ID="cf"
+  * IGNITION_CCAPI_CLIENT_SECRET=""
 
 ### Run the application locally
 
