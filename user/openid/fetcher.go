@@ -30,6 +30,7 @@ func (g *Fetcher) Profile(ctx context.Context, c *oauth2.Config, t *oauth2.Token
 	}
 
 	var claims struct {
+		Sub        string `json:"sub"`
 		UserName   string `json:"user_name"`
 		UserID     string `json:"user_id"`
 		GivenName  string `json:"given_name"`
@@ -42,7 +43,7 @@ func (g *Fetcher) Profile(ctx context.Context, c *oauth2.Config, t *oauth2.Token
 
 	return &user.Profile{
 		Email:       claims.Email,
-		AccountName: claims.Email,
+		AccountName: claims.UserName,
 		Name:        fmt.Sprintf("%s %s", claims.GivenName, claims.FamilyName),
 	}, nil
 }

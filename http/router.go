@@ -8,10 +8,10 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/dghubble/sessions"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/pivotalservices/ignition/cloudfoundry"
 	"github.com/pivotalservices/ignition/user"
 	"golang.org/x/oauth2"
 )
@@ -26,11 +26,15 @@ type API struct {
 	WebRoot          string
 	Scheme           string
 	APIURL           string
+	AppsURL          string
+	UAAURL           string
 	UserConfig       *oauth2.Config
 	APIConfig        *oauth2.Config
+	APIUsername      string
+	APIPassword      string
 	Fetcher          user.Fetcher
 	SessionStore     sessions.Store
-	CCAPI            *cloudfoundry.API
+	CCAPI            *cfclient.Client
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -56,7 +60,7 @@ func (a *API) createRouter() *mux.Router {
 	}))).Name("index")
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
 	r.Handle("/profile", ensureHTTPS(a.ContextFromSession(Authorize(profileHandler(), a.AuthorizedDomain))))
-	r.Handle("/organization", ensureHTTPS(a.ContextFromSession(Authorize(a.organizationHandler(), a.AuthorizedDomain))))
+	r.Handle("/organization", ensureHTTPS(a.ContextFromSession(Authorize(organizationHandler(a.AppsURL, a.CCAPI), a.AuthorizedDomain))))
 	a.handleAuth(r)
 	r.HandleFunc("/403", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)

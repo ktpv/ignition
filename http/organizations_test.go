@@ -5,13 +5,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/ignition/cloudfoundry"
+	"github.com/pivotalservices/ignition/user"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 	"golang.org/x/oauth2"
@@ -24,6 +26,17 @@ func helperLoadBytes(t *testing.T, name string) []byte {
 		t.Fatal(err)
 	}
 	return bytes
+}
+
+type fakeQuerier struct{}
+
+func (q *fakeQuerier) ListOrgsByQuery(query url.Values) ([]cfclient.Org, error) {
+	return []cfclient.Org{
+		cfclient.Org{
+			Guid: "1234",
+			Name: "test-org",
+		},
+	}, nil
 }
 
 func TestOrganizationHandler(t *testing.T) {
@@ -54,18 +67,22 @@ func TestOrganizationHandler(t *testing.T) {
 					b := helperLoadBytes(t, "organization-response.json")
 					w.Write(b)
 				} else {
-					r = r.WithContext(WithToken(r.Context(), token))
-					a.organizationHandler().ServeHTTP(w, r)
+					profile := &user.Profile{
+						AccountName: "testuser@test.com",
+					}
+					r = r.WithContext(WithToken(user.WithProfile(WithUserID(r.Context(), "test-userid"), profile), token))
+					organizationHandler("http://example.net", &fakeQuerier{}).ServeHTTP(w, r)
 				}
 			}))
 			a = &API{
-				CCAPI: &cloudfoundry.API{
-					URI: fmt.Sprintf("%s/api", s.URL),
-					Config: &oauth2.Config{
+				CCAPI: &cfclient.Client{
+					Config: cfclient.Config{
+						ApiAddress:   fmt.Sprintf("%s/api", s.URL),
+						HttpClient:   http.DefaultClient,
 						ClientID:     "cf",
 						ClientSecret: "",
+						Token:        "",
 					},
-					Token: token,
 				},
 			}
 			req, _ = http.NewRequest(http.MethodGet, s.URL, nil)

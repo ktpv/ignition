@@ -2,10 +2,34 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "code.cloudfoundry.org/uaa-cli"
+  packages = ["utils"]
+  revision = "7b51e20e9814368fa367eb6ba6c3a5fdf953db0c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cloudfoundry-community/go-cfclient"
+  packages = ["."]
+  revision = "992119ebf08b760f9836b9eddc52721d9318c060"
+
+[[projects]]
   name = "github.com/cloudfoundry-community/go-cfenv"
   packages = ["."]
   revision = "f920e9562d5f951cbf11785728f67258c38a10d0"
   version = "v1.17.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cloudfoundry-incubator/uaa-cli"
+  packages = ["uaa"]
+  revision = "7b51e20e9814368fa367eb6ba6c3a5fdf953db0c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cloudfoundry/gofileutils"
+  packages = ["fileutils"]
+  revision = "4d0c80011a0f37da1711c184028bc40137cd45af"
 
 [[projects]]
   branch = "v2"
@@ -28,6 +52,12 @@
   name = "github.com/dghubble/sessions"
   packages = ["."]
   revision = "26dc61fdb7361714ff41a80a2ad18cbdf8ba1956"
+
+[[projects]]
+  name = "github.com/fatih/color"
+  packages = ["."]
+  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
+  version = "v1.6.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -64,6 +94,18 @@
   packages = ["."]
   revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
   version = "v1.3.0"
+
+[[projects]]
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
 
 [[projects]]
   branch = "master"
@@ -140,9 +182,16 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "clientcredentials",
     "internal"
   ]
   revision = "2f32c3ac0fa4fb807a0fcefb0b6f2468a0d99bd0"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "13d03a9a82fba647c21a0ef8fba44a795d0f0835"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -204,14 +253,14 @@
   version = "v2.1.4"
 
 [[projects]]
+  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
+  revision = "4fc5987536ef307a24ca299aee7ae301cde3d221"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "85b291f54b063b023a5a5ba16cc0f8135d2ac501c728f7ef4a515c469a87639a"
+  inputs-digest = "70b4e3ae5a890f7c614efac6944b3db0c01612df47422dc1dc4d169a0fe79cd7"
   solver-name = "gps-cdcl"
   solver-version = 1

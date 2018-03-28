@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudfoundry-incubator/uaa-cli/uaa"
 	"github.com/dghubble/gologin"
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
 	"github.com/gorilla/mux"
@@ -27,8 +28,10 @@ const (
 	sessionTokenKey       = "token"
 	sessionProfileKey     = "profile"
 	sessionEmailKey       = "email"
+	sessionUAAIDKey       = "uaaid"
 	sessionName           = "ignition"
 	contextTokenKey   key = iota
+	contextUserIDKey  key = iota
 )
 
 func (a *API) handleAuth(r *mux.Router) {
@@ -123,10 +126,51 @@ func (a *API) IssueSession() http.Handler {
 			return
 		}
 		session.Values[sessionTokenKey] = string(buf.String())
+		userid, ok, _ := a.SearchForUserWithAccountName(req.Context(), profile.AccountName)
+		if ok {
+			session.Values[sessionUAAIDKey] = userid
+		}
 		session.Save(w)
 		http.Redirect(w, req, "/", http.StatusFound)
 	}
 	return http.HandlerFunc(fn)
+}
+
+// SearchForUserWithAccountName queries the UAA API for users filtered by account name
+func (a *API) SearchForUserWithAccountName(ctx context.Context, accountName string) (string, bool, error) {
+	if strings.TrimSpace(accountName) == "" {
+		return "", false, errors.New("cannot search for a user with an empty account name")
+	}
+	oauthConfig := oauth2.Config{
+		ClientID:     "cf",
+		ClientSecret: "",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  fmt.Sprintf("%s/oauth/authorize", a.UAAURL),
+			TokenURL: fmt.Sprintf("%s/oauth/token", a.UAAURL),
+		},
+	}
+
+	t, err := oauthConfig.PasswordCredentialsToken(ctx, a.APIUsername, a.APIPassword)
+	if err != nil {
+		return "", false, errors.Wrap(err, "could not retrieve UAA token")
+	}
+	client := oauthConfig.Client(ctx, t)
+
+	uaactx := uaa.NewContextWithToken(t.AccessToken)
+	uaaConfig := uaa.NewConfig()
+	uaaConfig.AddTarget(uaa.Target{
+		BaseUrl: a.UAAURL,
+	})
+	uaaConfig.AddContext(uaactx)
+	userManager := uaa.UserManager{
+		Config:     uaaConfig,
+		HttpClient: client,
+	}
+	u, err := userManager.GetByUsername(accountName, "", "")
+	if err != nil || strings.TrimSpace(u.ID) == "" {
+		return "", false, err
+	}
+	return u.ID, true, nil
 }
 
 // ContextFromSession populates the context with session information
@@ -168,6 +212,10 @@ func (a *API) newContextFromSession(ctx context.Context, req *http.Request) cont
 		}
 		ctx = user.WithProfile(ctx, &profile)
 	}
+	userID, ok := session.Values[sessionUAAIDKey].(string)
+	if ok {
+		ctx = WithUserID(ctx, userID)
+	}
 
 	return ctx
 }
@@ -176,7 +224,7 @@ func (a *API) newContextFromSession(ctx context.Context, req *http.Request) cont
 func TokenFromContext(ctx context.Context) (*oauth2.Token, error) {
 	token, ok := ctx.Value(contextTokenKey).(*oauth2.Token)
 	if !ok {
-		return nil, fmt.Errorf("Context missing Token")
+		return nil, fmt.Errorf("context missing Token")
 	}
 	return token, nil
 }
@@ -184,6 +232,23 @@ func TokenFromContext(ctx context.Context) (*oauth2.Token, error) {
 // WithToken returns a copy of ctx that stores the Token.
 func WithToken(ctx context.Context, token *oauth2.Token) context.Context {
 	return context.WithValue(ctx, contextTokenKey, token)
+}
+
+// UserIDFromContext returns the user ID from the ctx.
+func UserIDFromContext(ctx context.Context) (string, error) {
+	userID, ok := ctx.Value(contextUserIDKey).(string)
+	if !ok {
+		return "", fmt.Errorf("context missing UserID")
+	}
+	return userID, nil
+}
+
+// WithUserID returns a copy of ctx that stores the user ID.
+func WithUserID(ctx context.Context, userID string) context.Context {
+	if strings.TrimSpace(userID) == "" {
+		return ctx
+	}
+	return context.WithValue(ctx, contextUserIDKey, userID)
 }
 
 // CallbackHandler handles Google redirection URI requests and adds the Google

@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfenv"
 	"github.com/dghubble/sessions"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pivotalservices/ignition/cloudfoundry"
 	"github.com/pivotalservices/ignition/http"
 	"github.com/pivotalservices/ignition/user/openid"
 	"github.com/pkg/errors"
@@ -32,6 +32,8 @@ type envConfig struct {
 	Domain            string   `envconfig:"domain" default:"localhost"`                           // IGNITION_DOMAIN
 	Scheme            string   `envconfig:"scheme" default:"http"`                                // IGNITION_SCHEME
 	WebRoot           string   `envconfig:"web_root"`                                             // IGNITION_WEB_ROOT
+	UAAURL            string   `envconfig:"uaa_url" required:"true"`                              // IGNITION_UAA_URL
+	AppsURL           string   `envconfig:"apps_url" required:"true"`                             // IGNITION_APPS_URL
 	CCAPIURL          string   `envconfig:"ccapi_url" required:"true"`                            // IGNITION_CCAPI_URL
 	CCAPIClientID     string   `envconfig:"ccapi_client_id" default:"cf"`                         // IGNITION_CCAPI_CLIENT_ID
 	CCAPIClientSecret string   `envconfig:"ccapi_client_secret" default:""`                       // IGNITION_CCAPI_CLIENT_SECRET
@@ -45,19 +47,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// info, err := api.CCAPI.Info()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// e := oauth2.Endpoint{
-	// 	AuthURL:  info.AuthorizationEndpoint,
-	// 	TokenURL: info.TokenEndpoint,
-	// }
-	// api.CCAPI.Config.Endpoint = e
-	err = api.CCAPI.Authenticate()
+	config := &cfclient.Config{
+		ApiAddress: api.APIURL,
+		Username:   api.APIUsername,
+		Password:   api.APIPassword,
+	}
+	client, err := cfclient.NewClient(config)
 	if err != nil {
 		log.Fatal(err)
 	}
+	api.CCAPI = client
 	log.Printf("Starting Server listening on %s\n", api.URI())
 	log.Fatal(api.Run())
 }
@@ -133,7 +132,9 @@ func NewAPI() (*http.API, error) {
 		Port:      c.Port,
 		Domain:    c.Domain,
 		ServePort: c.ServePort,
+		AppsURL:   c.AppsURL,
 		APIURL:    c.CCAPIURL,
+		UAAURL:    c.UAAURL,
 		UserConfig: &oauth2.Config{
 			ClientID:     c.ClientID,
 			ClientSecret: c.ClientSecret,
@@ -149,13 +150,8 @@ func NewAPI() (*http.API, error) {
 			Verifier: openid.NewVerifier(c.IssuerURL, c.ClientID, c.JWKSURL),
 		},
 		SessionStore: sessions.NewCookieStore([]byte(c.SessionSecret), nil),
-		CCAPI: &cloudfoundry.API{
-			URI:          c.CCAPIURL,
-			ClientID:     c.CCAPIClientID,
-			ClientSecret: c.CCAPIClientSecret,
-			Username:     c.CCAPIUsername,
-			Password:     c.CCAPIPassword,
-		},
+		APIUsername:  c.CCAPIUsername,
+		APIPassword:  c.CCAPIPassword,
 	}
 	return &api, nil
 }
