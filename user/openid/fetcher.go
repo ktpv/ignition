@@ -13,7 +13,27 @@ import (
 
 // Fetcher retrieves the profile for a user when the auth variant is "google"
 type Fetcher struct {
-	Verifier *oidc.IDTokenVerifier
+	Verifier Verifier
+}
+
+// Verifier takes an OpenID ID token and verifies it, returning claims
+type Verifier interface {
+	Verify(ctx context.Context, rawIDToken string) (*Claims, error)
+}
+
+// OIDCVerifier takes an OpenID ID token and verifies it, returning an ID Token
+type OIDCVerifier interface {
+	Verify(ctx context.Context, rawIDToken string) (*oidc.IDToken, error)
+}
+
+// Claims represent metadata from an OpenID ID token
+type Claims struct {
+	Sub        string `json:"sub"`
+	UserName   string `json:"user_name"`
+	UserID     string `json:"user_id"`
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
+	Email      string `json:"email"`
 }
 
 // Profile retrieves the user's profile with the given context, config, and token
@@ -21,25 +41,16 @@ func (g *Fetcher) Profile(ctx context.Context, c *oauth2.Config, t *oauth2.Token
 	if g.Verifier == nil {
 		return nil, errors.New("unable to verify token")
 	}
+	if t == nil {
+		return nil, errors.New("unable to verify token")
+	}
 	rawIDToken, ok := t.Extra("id_token").(string)
 	if !ok {
 		return nil, errors.New("profile: no id_token")
 	}
-	idToken, err := g.Verifier.Verify(ctx, rawIDToken)
+	claims, err := g.Verifier.Verify(ctx, rawIDToken)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to verify rawIDToken")
-	}
-
-	var claims struct {
-		Sub        string `json:"sub"`
-		UserName   string `json:"user_name"`
-		UserID     string `json:"user_id"`
-		GivenName  string `json:"given_name"`
-		FamilyName string `json:"family_name"`
-		Email      string `json:"email"`
-	}
-	if err = idToken.Claims(&claims); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to fetch claims")
 	}
 
 	username := claims.UserName
@@ -50,14 +61,34 @@ func (g *Fetcher) Profile(ctx context.Context, c *oauth2.Config, t *oauth2.Token
 	return &user.Profile{
 		Email:       claims.Email,
 		AccountName: username,
-		Name:        fmt.Sprintf("%s %s", claims.GivenName, claims.FamilyName),
+		Name:        strings.TrimSpace(fmt.Sprintf("%s %s", claims.GivenName, claims.FamilyName)),
 	}, nil
 }
 
-// NewVerifier returns an IDTokenVerifier that uses a keySet fetched from jwksURL
-func NewVerifier(issuerURL string, clientID string, jwksURL string) *oidc.IDTokenVerifier {
+// OIDCIDVerifier is an ID token verifier
+type OIDCIDVerifier struct {
+	Verifier OIDCVerifier
+}
+
+// Verify takes the given raw ID token and returns claims
+func (o *OIDCIDVerifier) Verify(ctx context.Context, rawIDToken string) (*Claims, error) {
+	idToken, err := o.Verifier.Verify(ctx, rawIDToken)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to verify rawIDToken")
+	}
+	var claims Claims
+	if err = idToken.Claims(&claims); err != nil {
+		return nil, err
+	}
+	return &claims, nil
+}
+
+// NewVerifier returns a Verifier that uses a keySet fetched from the jwksURL
+func NewVerifier(issuerURL string, clientID string, jwksURL string) Verifier {
 	keySet := oidc.NewRemoteKeySet(context.Background(), jwksURL)
-	return oidc.NewVerifier(issuerURL, keySet, &oidc.Config{
-		ClientID: clientID,
-	})
+	return &OIDCIDVerifier{
+		Verifier: oidc.NewVerifier(issuerURL, keySet, &oidc.Config{
+			ClientID: clientID,
+		}),
+	}
 }

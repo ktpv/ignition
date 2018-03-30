@@ -1,3 +1,5 @@
+required = ["github.com/maxbrunsfeld/counterfeiter"]
+
 [prune]
   go-tests = true
   unused-packages = true

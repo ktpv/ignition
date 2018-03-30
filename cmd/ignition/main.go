@@ -39,6 +39,7 @@ type envConfig struct {
 	CCAPIClientSecret string   `envconfig:"ccapi_client_secret" default:""`                       // IGNITION_CCAPI_CLIENT_SECRET
 	CCAPIUsername     string   `envconfig:"ccapi_username" required:"true"`                       // IGNITION_CCAPI_USERNAME
 	CCAPIPassword     string   `envconfig:"ccapi_password" required:"true"`                       // IGNITION_CCAPI_PASSWORD
+	OrgPrefix         string   `envconfig:"org_prefix" default:"ignition"`
 }
 
 func main() {
@@ -152,6 +153,7 @@ func NewAPI() (*http.API, error) {
 		SessionStore: sessions.NewCookieStore([]byte(c.SessionSecret), nil),
 		APIUsername:  c.CCAPIUsername,
 		APIPassword:  c.CCAPIPassword,
+		OrgPrefix:    c.OrgPrefix,
 	}
 	return &api, nil
 }

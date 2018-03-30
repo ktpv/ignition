@@ -5,51 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/pivotalservices/ignition/cloudfoundry"
 	"github.com/pivotalservices/ignition/user"
 )
 
-type Org struct {
-	GUID                        string `json:"guid"`
-	CreatedAt                   string `json:"created_at"`
-	UpdatedAt                   string `json:"updated_at"`
-	Name                        string `json:"name"`
-	QuotaDefinitionGUID         string `json:"quota_definition_guid"`
-	DefaultIsolationSegmentGUID string `json:"default_isolation_segment_guid"`
-	URL                         string `json:"url"`
-}
-
-type OrgQuerier interface {
-	ListOrgsByQuery(query url.Values) ([]cfclient.Org, error)
-}
-
-// OrgsForUserID returns the orgs that the user is a member of
-func OrgsForUserID(id string, appsURL string, q OrgQuerier) ([]Org, error) {
-	query := url.Values{}
-	query.Add("q", fmt.Sprintf("user_guid:%s", id))
-	o, err := q.ListOrgsByQuery(query)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]Org, len(o))
-	for i := range o {
-		result[i] = Org{
-			GUID:                        o[i].Guid,
-			CreatedAt:                   o[i].CreatedAt,
-			UpdatedAt:                   o[i].UpdatedAt,
-			Name:                        o[i].Name,
-			QuotaDefinitionGUID:         o[i].QuotaDefinitionGuid,
-			DefaultIsolationSegmentGUID: o[i].DefaultIsolationSegmentGuid,
-			URL: fmt.Sprintf("%s/organizations/%s", appsURL, o[i].Guid),
-		}
-	}
-	return result, nil
-}
-
-func organizationHandler(appsURL string, q OrgQuerier) http.Handler {
+func organizationHandler(appsURL string, orgPrefix string, q cloudfoundry.OrganizationQuerier) http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		profile, err := user.ProfileFromContext(req.Context())
@@ -64,7 +26,7 @@ func organizationHandler(appsURL string, q OrgQuerier) http.Handler {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		o, err := OrgsForUserID(userID, appsURL, q)
+		o, err := cloudfoundry.OrgsForUserID(userID, appsURL, q)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -81,7 +43,7 @@ func organizationHandler(appsURL string, q OrgQuerier) http.Handler {
 			return
 		}
 
-		expected := orgName(profile.AccountName)
+		expected := orgName(orgPrefix, profile.AccountName)
 		for i := range o {
 			if strings.EqualFold(expected, o[i].Name) {
 				w.WriteHeader(http.StatusOK)
@@ -95,16 +57,18 @@ func organizationHandler(appsURL string, q OrgQuerier) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func orgName(accountName string) string {
+func orgName(orgPrefix string, accountName string) string {
+	orgPrefix = strings.ToLower(orgPrefix)
+	accountName = strings.ToLower(accountName)
 	if strings.Contains(accountName, "@") {
 		components := strings.Split(accountName, "@")
-		return fmt.Sprintf("ignition-%s", components[0])
+		return fmt.Sprintf("%s-%s", orgPrefix, components[0])
 	}
 
 	if strings.Contains(accountName, "\\") {
 		components := strings.Split(accountName, "\\")
-		return fmt.Sprintf("ignition-%s", components[1])
+		return fmt.Sprintf("%s-%s", orgPrefix, components[1])
 	}
 
-	return fmt.Sprintf("ignition-%s", accountName)
+	return fmt.Sprintf("%s-%s", orgPrefix, accountName)
 }

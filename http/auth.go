@@ -70,19 +70,27 @@ func Authorize(next http.Handler, domain string) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// Write gzipped data to a Writer
+// gzipWrite reads from the slice of bytes and writes the compressed data to the
+// writer
 func gzipWrite(w io.Writer, data []byte) error {
 	// Write gzipped data to the client
 	gw, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+	if err != nil {
+		return err
+	}
 	defer gw.Close()
 	gw.Write(data)
 	return err
 }
 
-// Write gunzipped data to a Writer
+// gunzipWrite reads from the gzipped slice of bytes and writes the uncompressed
+// data to the writer
 func gunzipWrite(w io.Writer, data []byte) error {
 	// Write gzipped data to the client
 	gr, err := gzip.NewReader(bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
 	defer gr.Close()
 	data, err = ioutil.ReadAll(gr)
 	if err != nil {
