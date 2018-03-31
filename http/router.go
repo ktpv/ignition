@@ -36,6 +36,7 @@ type API struct {
 	SessionStore     sessions.Store
 	CCAPI            *cfclient.Client
 	OrgPrefix        string
+	QuotaID          string
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -61,7 +62,7 @@ func (a *API) createRouter() *mux.Router {
 	}))).Name("index")
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
 	r.Handle("/profile", ensureHTTPS(a.ContextFromSession(Authorize(profileHandler(), a.AuthorizedDomain))))
-	r.Handle("/organization", ensureHTTPS(a.ContextFromSession(Authorize(organizationHandler(a.AppsURL, a.OrgPrefix, a.CCAPI), a.AuthorizedDomain))))
+	r.Handle("/organization", ensureHTTPS(a.ContextFromSession(Authorize(organizationHandler(a.AppsURL, a.OrgPrefix, a.QuotaID, a.CCAPI), a.AuthorizedDomain))))
 	a.handleAuth(r)
 	r.HandleFunc("/403", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)

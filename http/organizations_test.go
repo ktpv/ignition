@@ -1,21 +1,17 @@
 package http
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/ignition/cloudfoundry/cloudfoundryfakes"
-	"github.com/pivotalservices/ignition/internal"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
-	"golang.org/x/oauth2"
 )
 
 func TestOrganizationHandler(t *testing.T) {
@@ -23,94 +19,106 @@ func TestOrganizationHandler(t *testing.T) {
 }
 
 func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
-	var s *httptest.Server
-	var client *http.Client
-	var req *http.Request
-	var a *API
+	var r *http.Request
+	var w *httptest.ResponseRecorder
 	var c *cloudfoundryfakes.FakeAPI
 
 	it.Before(func() {
 		RegisterTestingT(t)
-		client = &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest(http.MethodGet, "/", nil)
 		c = &cloudfoundryfakes.FakeAPI{}
-		token := &oauth2.Token{
-			AccessToken:  "test-token",
-			RefreshToken: "test-refresh-token",
-			TokenType:    "bearer",
-			Expiry:       time.Now().Add(time.Hour * 24),
-		}
-		s = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if strings.HasPrefix(r.RequestURI, "/api") {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				b := internal.HelperLoadBytes(t, "organization-response.json")
-				w.Write(b)
-			} else {
-				profile := &user.Profile{
-					AccountName: "testuser@test.com",
-				}
-				r = r.WithContext(WithToken(user.WithProfile(WithUserID(r.Context(), "test-userid"), profile), token))
-				organizationHandler("http://example.net", "ignition", c).ServeHTTP(w, r)
-			}
-		}))
-		a = &API{
-			CCAPI: &cfclient.Client{
-				Config: cfclient.Config{
-					ApiAddress:   fmt.Sprintf("%s/api", s.URL),
-					HttpClient:   http.DefaultClient,
-					ClientID:     "cf",
-					ClientSecret: "",
-					Token:        "",
-				},
-			},
-		}
-		req, _ = http.NewRequest(http.MethodGet, s.URL, nil)
 	})
 
-	it.After(func() {
-		s.Close()
-	})
-
-	when("the user has an org", func() {
-		it("returns the org", func() {
-			c.ListOrgsByQueryReturns([]cfclient.Org{
-				cfclient.Org{
-					Guid:                        "1234",
-					Name:                        "test-org",
-					CreatedAt:                   "now",
-					UpdatedAt:                   "later",
-					QuotaDefinitionGuid:         "321",
-					DefaultIsolationSegmentGuid: "987",
-				},
-			}, nil)
-			resp, err := client.Do(req)
-			Expect(err).To(BeNil())
-			Expect(resp).NotTo(BeNil())
-			Expect(resp.StatusCode).To(Equal(http.StatusOK))
-			Expect(resp.Body)
+	when("there is no profile in the context", func() {
+		it("is not found", func() {
+			r = httptest.NewRequest(http.MethodGet, "/", nil)
+			organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
+			Expect(w.Code).To(Equal(http.StatusNotFound))
 		})
 	})
 
-	when("the user has multiple orgs", func() {
-		it("returns the org with the correct name", func() {
-			c.ListOrgsByQueryReturns([]cfclient.Org{
-				cfclient.Org{
-					Guid:                        "1234",
-					Name:                        "test-org",
-					CreatedAt:                   "now",
-					UpdatedAt:                   "later",
-					QuotaDefinitionGuid:         "321",
-					DefaultIsolationSegmentGuid: "987",
-				},
-			}, nil)
-			resp, err := client.Do(req)
-			Expect(err).To(BeNil())
-			Expect(resp).NotTo(BeNil())
-			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+	when("there is a profile in the context but no user id", func() {
+		it("is not found", func() {
+			r = httptest.NewRequest(http.MethodGet, "/", nil)
+			profile := &user.Profile{
+				AccountName: "testuser@test.com",
+			}
+			r = r.WithContext(user.WithProfile(r.Context(), profile))
+			organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
+			Expect(w.Code).To(Equal(http.StatusNotFound))
+		})
+	})
+
+	when("there is a profile and a user id in the context", func() {
+		it.Before(func() {
+			r = httptest.NewRequest(http.MethodGet, "/", nil)
+			profile := &user.Profile{
+				AccountName: "testuser@test.com",
+			}
+			r = r.WithContext(user.WithProfile(WithUserID(r.Context(), "test-user-id"), profile))
+		})
+
+		when("orgs cannot be retrieved", func() {
+			it.Before(func() {
+				c.ListOrgsByQueryReturns(nil, errors.New("test error"))
+			})
+
+			it("is an internal server error", func() {
+				organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		when("there are no orgs for the user", func() {
+			it.Before(func() {
+				c.ListOrgsByQueryReturns(nil, nil)
+			})
+
+			it("is not found", func() {
+				organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusNotFound))
+			})
+		})
+
+		when("there are multiple orgs for the user", func() {
+			it.Before(func() {
+				c.ListOrgsByQueryReturns([]cfclient.Org{
+					cfclient.Org{
+						Guid:                        "test-org-2",
+						Name:                        "ignition-testuser1",
+						QuotaDefinitionGuid:         "ignition-quota2-id",
+						DefaultIsolationSegmentGuid: "default-iso-guid",
+						CreatedAt:                   "created-at",
+						UpdatedAt:                   "updated-at",
+					},
+					cfclient.Org{
+						Guid:                        "test-org-1",
+						Name:                        "ignition-testuser",
+						QuotaDefinitionGuid:         "ignition-quota-id",
+						DefaultIsolationSegmentGuid: "default-iso-guid",
+						CreatedAt:                   "created-at",
+						UpdatedAt:                   "updated-at",
+					},
+				}, nil)
+			})
+
+			it("selects the correct org when there is a name match", func() {
+				organizationHandler("http://example.net", "ignition", "test-quota2-id", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusOK))
+				Expect(w.Body.String()).To(ContainSubstring("test-org-1"))
+			})
+
+			it("is not found when there is no name or quota match", func() {
+				organizationHandler("http://example.net", "ignition1", "test-quota2-id", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusNotFound))
+			})
+
+			it("selects the correct org when there is a quota match (but not a name match)", func() {
+				organizationHandler("http://example.net", "ignition2", "ignition-quota-id", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusOK))
+				Expect(w.Body.String()).To(ContainSubstring("test-org-1"))
+			})
 		})
 	})
 }

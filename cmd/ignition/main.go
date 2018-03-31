@@ -39,7 +39,8 @@ type envConfig struct {
 	CCAPIClientSecret string   `envconfig:"ccapi_client_secret" default:""`                       // IGNITION_CCAPI_CLIENT_SECRET
 	CCAPIUsername     string   `envconfig:"ccapi_username" required:"true"`                       // IGNITION_CCAPI_USERNAME
 	CCAPIPassword     string   `envconfig:"ccapi_password" required:"true"`                       // IGNITION_CCAPI_PASSWORD
-	OrgPrefix         string   `envconfig:"org_prefix" default:"ignition"`
+	OrgPrefix         string   `envconfig:"org_prefix" default:"ignition"`                        // IGNITION_ORG_PREFIX
+	QuotaID           string   `envconfig:"quota_id" required:"true"`                             // IGNITION_QUOTA_ID
 }
 
 func main() {
@@ -154,6 +155,7 @@ func NewAPI() (*http.API, error) {
 		APIUsername:  c.CCAPIUsername,
 		APIPassword:  c.CCAPIPassword,
 		OrgPrefix:    c.OrgPrefix,
+		QuotaID:      c.QuotaID,
 	}
 	return &api, nil
 }

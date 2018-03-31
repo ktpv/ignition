@@ -11,7 +11,7 @@ import (
 	"github.com/pivotalservices/ignition/user"
 )
 
-func organizationHandler(appsURL string, orgPrefix string, q cloudfoundry.OrganizationQuerier) http.Handler {
+func organizationHandler(appsURL string, orgPrefix string, quotaID string, q cloudfoundry.OrganizationQuerier) http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		profile, err := user.ProfileFromContext(req.Context())
@@ -37,22 +37,27 @@ func organizationHandler(appsURL string, orgPrefix string, q cloudfoundry.Organi
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		if len(o) == 1 {
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(o[0])
-			return
-		}
 
 		expected := orgName(orgPrefix, profile.AccountName)
+		var quotaMatches []cloudfoundry.Organization
 		for i := range o {
+			if strings.EqualFold(quotaID, o[i].QuotaDefinitionGUID) {
+				quotaMatches = append(quotaMatches, o[i])
+			}
 			if strings.EqualFold(expected, o[i].Name) {
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(o[i])
 				return
 			}
 		}
+
+		if len(quotaMatches) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(o[0])
+		json.NewEncoder(w).Encode(quotaMatches[0])
 	}
 	return http.HandlerFunc(fn)
 }
