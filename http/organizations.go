@@ -1,7 +1,9 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,21 +14,32 @@ import (
 	"github.com/pivotalservices/ignition/user"
 )
 
+func userFromContext(ctx context.Context) (userID string, accountName string, err error) {
+	var profile *user.Profile
+	profile, err = user.ProfileFromContext(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	if profile == nil {
+		return "", "", errors.New("no profile was found")
+	}
+	userID, err = session.UserIDFromContext(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	return userID, profile.AccountName, nil
+}
+
 func organizationHandler(appsURL string, orgPrefix string, quotaID string, q cloudfoundry.OrganizationQuerier) http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		profile, err := user.ProfileFromContext(req.Context())
+		userID, accountName, err := userFromContext(req.Context())
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		userID, err := session.UserIDFromContext(req.Context())
-		if err != nil || strings.TrimSpace(userID) == "" {
-			log.Println(err)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+
 		o, err := cloudfoundry.OrgsForUserID(userID, appsURL, q)
 		if err != nil {
 			log.Println(err)
@@ -39,7 +52,7 @@ func organizationHandler(appsURL string, orgPrefix string, quotaID string, q clo
 			return
 		}
 
-		expected := orgName(orgPrefix, profile.AccountName)
+		expected := orgName(orgPrefix, accountName)
 		var quotaMatches []cloudfoundry.Organization
 		for i := range o {
 			if strings.EqualFold(quotaID, o[i].QuotaDefinitionGUID) {

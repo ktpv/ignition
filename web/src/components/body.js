@@ -7,9 +7,6 @@ const styles = theme => ({
   button: {
     margin: theme.spacing.unit
   },
-  input: {
-    display: 'none'
-  }
 })
 
 class Body extends React.Component {
@@ -20,23 +17,22 @@ class Body extends React.Component {
     }
   }
 
-  componentDidMount () {
+  handleOrgButtonClick = () => {
+    // Spinner
     window.fetch('/organization', {
       credentials: 'same-origin'
-    }).then(response => response.json())
-      .then(response => {
-        console.log(response.url)
-        this.setState({orgUrl: response.url})
+    }).then(response => {
+        if (!response.ok) {
+          return
+        } 
+        const url = response.json().url
+        this.setState({orgUrl: url})
+        window.location = url
       })
-  }
-
-  handleOrgButtonClick = () => {
-    window.location = this.state.orgUrl
   }
 
   render () {
     const { classes } = this.props
-    console.log('In render')
     return (
       <div >
         <Button

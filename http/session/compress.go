@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-// gzipWrite reads from the slice of bytes and writes the compressed data to the
+// GzipWrite reads from the slice of bytes and writes the compressed data to the
 // writer
 func GzipWrite(w io.Writer, data []byte) error {
 	// Write gzipped data to the client
@@ -20,7 +20,7 @@ func GzipWrite(w io.Writer, data []byte) error {
 	return err
 }
 
-// gunzipWrite reads from the gzipped slice of bytes and writes the uncompressed
+// GunzipWrite reads from the gzipped slice of bytes and writes the uncompressed
 // data to the writer
 func GunzipWrite(w io.Writer, data []byte) error {
 	// Write gzipped data to the client

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -119,6 +120,63 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 				organizationHandler("http://example.net", "ignition2", "ignition-quota-id", c).ServeHTTP(w, r)
 				Expect(w.Code).To(Equal(http.StatusOK))
 				Expect(w.Body.String()).To(ContainSubstring("test-org-1"))
+			})
+		})
+	})
+}
+
+func TestUserFromContext(t *testing.T) {
+	spec.Run(t, "UserFromContext", testUserFromContext, spec.Report(report.Terminal{}))
+}
+
+func testUserFromContext(t *testing.T, when spec.G, it spec.S) {
+	var ctx context.Context
+	it.Before(func() {
+		RegisterTestingT(t)
+		ctx = context.Background()
+	})
+
+	when("there is no user", func() {
+		it("errors", func() {
+			_, _, err := userFromContext(ctx)
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	when("the profile is nil", func() {
+		it.Before(func() {
+			ctx = user.WithProfile(ctx, nil)
+		})
+		it("errors", func() {
+			_, _, err := userFromContext(ctx)
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	when("there is a valid profile", func() {
+		it.Before(func() {
+			ctx = user.WithProfile(ctx, &user.Profile{
+				AccountName: "test-user",
+			})
+		})
+
+		when("there is no user id", func() {
+			it("errors", func() {
+				_, _, err := userFromContext(ctx)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		when("there is a user ID", func() {
+			it.Before(func() {
+				ctx = session.ContextWithUserID(ctx, "test-user-id")
+			})
+
+			it("returns the user id and account name", func() {
+				userID, accountName, err := userFromContext(ctx)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(userID).To(Equal("test-user-id"))
+				Expect(accountName).To(Equal("test-user"))
 			})
 		})
 	})
