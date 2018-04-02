@@ -9,6 +9,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/ignition/cloudfoundry/cloudfoundryfakes"
+	"github.com/pivotalservices/ignition/http/session"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -56,7 +57,7 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 			profile := &user.Profile{
 				AccountName: "testuser@test.com",
 			}
-			r = r.WithContext(user.WithProfile(WithUserID(r.Context(), "test-user-id"), profile))
+			r = r.WithContext(user.WithProfile(session.ContextWithUserID(r.Context(), "test-user-id"), profile))
 		})
 
 		when("orgs cannot be retrieved", func() {

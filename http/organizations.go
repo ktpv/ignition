@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/pivotalservices/ignition/cloudfoundry"
+	"github.com/pivotalservices/ignition/http/session"
 	"github.com/pivotalservices/ignition/user"
 )
 
@@ -20,7 +21,7 @@ func organizationHandler(appsURL string, orgPrefix string, quotaID string, q clo
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		userID, err := UserIDFromContext(req.Context())
+		userID, err := session.UserIDFromContext(req.Context())
 		if err != nil || strings.TrimSpace(userID) == "" {
 			log.Println(err)
 			w.WriteHeader(http.StatusNotFound)

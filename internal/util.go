@@ -1,36 +1,32 @@
 package internal
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"testing"
 )
 
-// HelperLoadBytes reads a file from the testdata directory
-func HelperLoadBytes(t *testing.T, name string) []byte {
-	path := filepath.Join("testdata", name) // relative path
-	bytes, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return bytes
-}
-
-// TestDataHandler is a http.Handler that loads the given filename from the
-// testdata directory and returns it
-func TestDataHandler(t *testing.T, s string, called func()) http.HandlerFunc {
+// handleTestdata is a http.Handler that loads the given filename from the
+// testdata directory and serves it over HTTP.
+func handleTestdata(t *testing.T, s string, called func()) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		called()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		b := HelperLoadBytes(t, s)
-		w.Write(b)
+		f, err := os.Open(filepath.Join("testdata", s))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		io.Copy(w, f)
 	})
 }
 
-// TestDataServer is a test server that uses the TestDataHandler
-func TestDataServer(t *testing.T, s string, called func()) *httptest.Server {
-	return httptest.NewServer(TestDataHandler(t, s, called))
+// ServeFromTestdata is a test HTTP server that serves files from the testdata directory.
+func ServeFromTestdata(t *testing.T, s string, called func()) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(handleTestdata(t, s, called))
 }

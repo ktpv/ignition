@@ -44,6 +44,7 @@ func (g *Fetcher) Profile(ctx context.Context, c *oauth2.Config, t *oauth2.Token
 	if t == nil {
 		return nil, errors.New("unable to verify token")
 	}
+
 	rawIDToken, ok := t.Extra("id_token").(string)
 	if !ok {
 		return nil, errors.New("profile: no id_token")

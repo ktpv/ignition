@@ -60,7 +60,7 @@ func testAuthenticate(t *testing.T, when spec.G, it spec.S) {
 			calledFunc := func() {
 				called = true
 			}
-			s = internal.TestDataServer(t, "empty-token.json", calledFunc)
+			s = internal.ServeFromTestdata(t, "empty-token.json", calledFunc)
 			a = &uaa.Client{
 				URL:          s.URL,
 				ClientID:     "cf",
@@ -93,7 +93,7 @@ func testAuthenticate(t *testing.T, when spec.G, it spec.S) {
 			calledFunc := func() {
 				called = true
 			}
-			s = internal.TestDataServer(t, "token.json", calledFunc)
+			s = internal.ServeFromTestdata(t, "token.json", calledFunc)
 			a = &uaa.Client{
 				URL:          s.URL,
 				ClientID:     "cf",
@@ -178,7 +178,7 @@ func testUserIDForAccountName(t *testing.T, when spec.G, it spec.S) {
 
 		when("a valid user is returned", func() {
 			it.Before(func() {
-				s = internal.TestDataServer(t, "users.json", func() {
+				s = internal.ServeFromTestdata(t, "users.json", func() {
 					called = true
 				})
 				a.URL = s.URL
@@ -211,7 +211,7 @@ func testUserIDForAccountName(t *testing.T, when spec.G, it spec.S) {
 
 		when("an empty user is returned", func() {
 			it.Before(func() {
-				s = internal.TestDataServer(t, "empty-user.json", func() {
+				s = internal.ServeFromTestdata(t, "empty-user.json", func() {
 					called = true
 				})
 				a.URL = s.URL

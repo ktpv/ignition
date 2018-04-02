@@ -1,7 +1,6 @@
 package http
 
 import (
-	"bytes"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -11,8 +10,10 @@ import (
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
 	"github.com/dghubble/sessions"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/ignition/uaa/uaafakes"
+	"github.com/pivotalservices/ignition/http/session"
 	"github.com/pivotalservices/ignition/user"
+	"github.com/pivotalservices/ignition/user/openid"
+	"github.com/pivotalservices/ignition/user/openid/openidfakes"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 	"golang.org/x/oauth2"
@@ -83,7 +84,7 @@ func testAuthorize(t *testing.T, when spec.G, it spec.S) {
 			TokenType:    "bearer",
 			Expiry:       time.Now().Add(-24 * time.Hour),
 		}
-		ctx := context.WithValue(context.Background(), contextTokenKey, t)
+		ctx := session.ContextWithToken(context.Background(), t)
 		req := httptest.NewRequest(http.MethodGet, "/", nil).WithContext(ctx)
 		Authorize(nil, "").ServeHTTP(w, req)
 		Expect(w.Code).To(Equal(http.StatusUnauthorized))
@@ -104,7 +105,7 @@ func testAuthorize(t *testing.T, when spec.G, it spec.S) {
 				TokenType:    "bearer",
 				Expiry:       time.Now().Add(24 * time.Hour),
 			}
-			ctx := WithToken(context.Background(), t)
+			ctx := session.ContextWithToken(context.Background(), t)
 			req = httptest.NewRequest(http.MethodGet, "/", nil).WithContext(ctx)
 		})
 
@@ -142,85 +143,75 @@ func testAuthorize(t *testing.T, when spec.G, it spec.S) {
 	})
 }
 
-func TestCompress(t *testing.T) {
-	spec.Run(t, "Compress", testCompress, spec.Report(report.Terminal{}))
+func TestCallbackHandler(t *testing.T) {
+	spec.Run(t, "CallbackHandler", testCallbackHandler, spec.Report(report.Terminal{}))
 }
 
-func testCompress(t *testing.T, when spec.G, it spec.S) {
-	it.Before(func() {
-		RegisterTestingT(t)
-	})
-
-	it("can round-trip a byte array", func() {
-		b := bytes.NewBuffer(nil)
-		gzipWrite(b, []byte("hello"))
-		Expect(b.String()).NotTo(Equal("hello"))
-		b2 := bytes.NewBuffer(nil)
-		gunzipWrite(b2, b.Bytes())
-		Expect(b2.String()).To(Equal("hello"))
-	})
-}
-
-func TestIssueSession(t *testing.T) {
-	spec.Run(t, "IssueSession", testIssueSession, spec.Report(report.Terminal{}))
-}
-
-func testIssueSession(t *testing.T, when spec.G, it spec.S) {
+func testCallbackHandler(t *testing.T, when spec.G, it spec.S) {
 	var (
-		a          *API
-		fakeUAAAPI *uaafakes.FakeAPI
+		s            *httptest.Server
+		fakeVerifier *openidfakes.FakeVerifier
 	)
 
 	it.Before(func() {
 		RegisterTestingT(t)
-		fakeUAAAPI = &uaafakes.FakeAPI{}
-		a = &API{
-			SessionStore: newFakeSessionStore(),
-			UAAAPI:       fakeUAAAPI,
+		s = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(
+				`{
+					"access_token": "access0-token",
+					"token_type": "bearer",
+					"id_token": "id-token",
+					"refresh_token": "refresh-token",
+					"expires_in": 7199,
+					"scope": "cloud_controller.admin cloud_controller.write doppler.firehose openid scim.read uaa.user cloud_controller.read password.write scim.write",
+					"jti": "1234567890"
+				}`))
+		}))
+		fakeVerifier = &openidfakes.FakeVerifier{}
+		fakeVerifier.VerifyReturns(&openid.Claims{
+			UserName: "testuser",
+			Email:    "test@pivotal.io",
+		}, nil)
+	})
+
+	it.After(func() {
+		s.Close()
+	})
+
+	it("", func() {
+		fetcher := &openid.Fetcher{
+			Verifier: fakeVerifier,
 		}
-	})
+		succeeded := false
+		failed := false
+		var ctxActual context.Context
+		success := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			succeeded = true
+			ctxActual = r.Context()
+		})
+		failure := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			failed = true
+			ctxActual = r.Context()
+		})
+		handler := CallbackHandler(&oauth2.Config{
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  s.URL,
+				TokenURL: s.URL,
+			},
+		}, fetcher, success, failure)
 
-	it("is an internal server error if the request has no user", func() {
-		handler := a.IssueSession()
-		req := httptest.NewRequest("GET", "http://example.com/oauth2", nil)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/oauth2?state=teststate&code=testcode", nil)
 		ctx := context.Background()
-		req = req.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, req)
-		Expect(w.Code).Should(Equal(http.StatusInternalServerError))
-	})
+		ctx = dgoauth2.WithState(ctx, "teststate")
+		handler.ServeHTTP(w, r.WithContext(ctx))
 
-	it("is an internal server error if the request has no token", func() {
-		handler := a.IssueSession()
-		req := httptest.NewRequest("GET", "http://example.com/oauth2", nil)
-		ctx := user.WithProfile(context.Background(), &user.Profile{
-			Email:       "test@pivotal.io",
-			AccountName: "test@pivotal.io",
-			Name:        "Joe Tester",
-		})
-		req = req.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, req)
-		Expect(w.Code).Should(Equal(http.StatusInternalServerError))
-	})
+		Expect(failed).To(BeFalse())
+		Expect(succeeded).To(BeTrue())
 
-	it("issues a session", func() {
-		handler := a.IssueSession()
-		req := httptest.NewRequest("GET", "http://example.com/oauth2", nil)
-		ctx := user.WithProfile(context.Background(), &user.Profile{
-			Email:       "test@pivotal.io",
-			AccountName: "test@pivotal.io",
-			Name:        "Joe Tester",
-		})
-		ctx = dgoauth2.WithToken(ctx, &oauth2.Token{
-			TokenType:    "Bearer",
-			AccessToken:  "1234",
-			RefreshToken: "",
-			Expiry:       time.Now().Add(3600 * time.Second),
-		})
-		req = req.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, req)
-		Expect(w.Code).Should(Equal(http.StatusFound))
+		p, err := user.ProfileFromContext(ctxActual)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(p.Email).To(Equal("test@pivotal.io"))
 	})
 }
