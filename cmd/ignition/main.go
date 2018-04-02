@@ -11,6 +11,7 @@ import (
 	"github.com/dghubble/sessions"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pivotalservices/ignition/http"
+	"github.com/pivotalservices/ignition/uaa"
 	"github.com/pivotalservices/ignition/user/openid"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
@@ -128,6 +129,14 @@ func NewAPI() (*http.API, error) {
 		Scopes:       []string{"cloud_controller.admin"},
 	}
 
+	uaaAPI := &uaa.Client{
+		URL:          c.UAAURL,
+		ClientID:     c.CCAPIClientID,
+		ClientSecret: c.CCAPIClientSecret,
+		Username:     c.CCAPIUsername,
+		Password:     c.CCAPIPassword,
+	}
+
 	api := http.API{
 		WebRoot:   c.WebRoot,
 		Scheme:    c.Scheme,
@@ -156,6 +165,7 @@ func NewAPI() (*http.API, error) {
 		APIPassword:  c.CCAPIPassword,
 		OrgPrefix:    c.OrgPrefix,
 		QuotaID:      c.QuotaID,
+		UAAAPI:       uaaAPI,
 	}
 	return &api, nil
 }

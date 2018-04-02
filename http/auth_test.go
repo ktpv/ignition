@@ -11,6 +11,7 @@ import (
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
 	"github.com/dghubble/sessions"
 	. "github.com/onsi/gomega"
+	"github.com/pivotalservices/ignition/uaa/uaafakes"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -165,11 +166,17 @@ func TestIssueSession(t *testing.T) {
 }
 
 func testIssueSession(t *testing.T, when spec.G, it spec.S) {
-	var a *API
+	var (
+		a          *API
+		fakeUAAAPI *uaafakes.FakeAPI
+	)
+
 	it.Before(func() {
 		RegisterTestingT(t)
+		fakeUAAAPI = &uaafakes.FakeAPI{}
 		a = &API{
 			SessionStore: newFakeSessionStore(),
+			UAAAPI:       fakeUAAAPI,
 		}
 	})
 

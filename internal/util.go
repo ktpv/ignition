@@ -20,8 +20,9 @@ func HelperLoadBytes(t *testing.T, name string) []byte {
 
 // TestDataHandler is a http.Handler that loads the given filename from the
 // testdata directory and returns it
-func TestDataHandler(t *testing.T, s string) http.HandlerFunc {
+func TestDataHandler(t *testing.T, s string, called func()) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		b := HelperLoadBytes(t, s)
@@ -30,6 +31,6 @@ func TestDataHandler(t *testing.T, s string) http.HandlerFunc {
 }
 
 // TestDataServer is a test server that uses the TestDataHandler
-func TestDataServer(t *testing.T, s string) *httptest.Server {
-	return httptest.NewServer(TestDataHandler(t, s))
+func TestDataServer(t *testing.T, s string, called func()) *httptest.Server {
+	return httptest.NewServer(TestDataHandler(t, s, called))
 }

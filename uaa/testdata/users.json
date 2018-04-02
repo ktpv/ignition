@@ -1,0 +1,158 @@
+{
+	"resources": [
+		{
+			"id": "abcdef11-0000-dddd-aaaa-1234567890ab",
+			"externalId": "tester@pivotal.io",
+			"meta": {
+				"version": 0,
+				"created": "2018-02-28T16:07:44.000Z",
+				"lastModified": "2018-02-28T16:07:44.000Z"
+			},
+			"userName": "tester@pivotal.io",
+			"name": {
+				"familyName": "pivotal.io",
+				"givenName": "tester"
+			},
+			"emails": [
+				{
+					"value": "tester@pivotal.io",
+					"primary": false
+				}
+			],
+			"groups": [
+				{
+					"value": "22222222-ffff-4444-bbbb-111111111111",
+					"display": "actuator.read",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-4444-aaaa-111111111111",
+					"display": "cloud_controller_service_permissions.read",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-4444-cccc-111111111111",
+					"display": "profile",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-4444-dddd-111111111111",
+					"display": "cloud_controller.read",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-4444-eeee-111111111111",
+					"display": "uaa.user",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-4444-ffff-111111111111",
+					"display": "oauth.approvals",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-1111-bbbb-111111111111",
+					"display": "notification_preferences.write",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-2222-bbbb-111111111111",
+					"display": "zones.11111111-ffff-4444-bbbb-111111111111.read",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-3333-bbbb-111111111111",
+					"display": "uaa.offline_token",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-5555-bbbb-111111111111",
+					"display": "zones.11111111-ffff-4444-bbbb-111111111111.admin",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-6666-bbbb-111111111111",
+					"display": "cloud_controller.write",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-7777-bbbb-111111111111",
+					"display": "roles",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-4444-8888-111111111111",
+					"display": "zones.11111111-ffff-4444-bbbb-111111111111.clients.admin",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-9999-bbbb-111111111111",
+					"display": "password.write",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-ffff-0000-bbbb-111111111111",
+					"display": "zones.11111111-ffff-4444-bbbb-111111111111.scim.read",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-1111-4444-bbbb-111111111111",
+					"display": "notification_preferences.read",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-2222-4444-bbbb-111111111111",
+					"display": "user_attributes",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-3333-4444-bbbb-111111111111",
+					"display": "cloud_controller.user",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-4444-4444-bbbb-111111111111",
+					"display": "zones.11111111-ffff-4444-bbbb-111111111111.scim.write",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-5555-4444-bbbb-111111111111",
+					"display": "scim.me",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-6666-4444-bbbb-111111111111",
+					"display": "openid",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-7777-4444-bbbb-111111111111",
+					"display": "approvals.me",
+					"type": "DIRECT"
+				},
+				{
+					"value": "22222222-8888-4444-bbbb-111111111111",
+					"display": "zones.11111111-ffff-4444-bbbb-111111111111.idps.read",
+					"type": "DIRECT"
+				}
+			],
+			"approvals": [],
+			"active": true,
+			"verified": true,
+			"origin": "okta",
+			"zoneId": "uaa",
+			"passwordLastModified": "2018-02-28T16:07:44.000Z",
+			"previousLogonTime": 1522446739358,
+			"lastLogonTime": 1522528794576,
+			"schemas": [
+				"urn:scim:schemas:core:1.0"
+			]
+		}
+	],
+	"startIndex": 1,
+	"itemsPerPage": 100,
+	"totalResults": 1,
+	"schemas": [
+		"urn:scim:schemas:core:1.0"
+	]
+}

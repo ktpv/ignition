@@ -8,10 +8,11 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/dghubble/sessions"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/pivotalservices/ignition/cloudfoundry"
+	"github.com/pivotalservices/ignition/uaa"
 	"github.com/pivotalservices/ignition/user"
 	"golang.org/x/oauth2"
 )
@@ -34,7 +35,8 @@ type API struct {
 	APIPassword      string
 	Fetcher          user.Fetcher
 	SessionStore     sessions.Store
-	CCAPI            *cfclient.Client
+	CCAPI            cloudfoundry.API
+	UAAAPI           uaa.API
 	OrgPrefix        string
 	QuotaID          string
 }
