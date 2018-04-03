@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
 	"github.com/dghubble/sessions"
@@ -20,6 +21,20 @@ const (
 	sessionUAAIDKey   = "uaaid"
 	sessionName       = "ignition"
 )
+
+// UpdateSessionWithUserID updates the session with a user ID if it is non-zero
+func UpdateSessionWithUserID(w http.ResponseWriter, req *http.Request, s sessions.Store, userID string) {
+	if strings.TrimSpace(userID) == "" {
+		return
+	}
+	session, err := s.Get(req, sessionName)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	session.Values[sessionUAAIDKey] = userID
+	session.Save(w)
+}
 
 // IssueSession stores the user's authentication state and profile in the
 // session

@@ -7,8 +7,10 @@ import (
 
 	"github.com/dghubble/gologin"
 	dgoauth2 "github.com/dghubble/gologin/oauth2"
+	"github.com/dghubble/sessions"
 	"github.com/gorilla/mux"
 	"github.com/pivotalservices/ignition/http/session"
+	"github.com/pivotalservices/ignition/uaa"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
@@ -22,6 +24,33 @@ func (a *API) handleAuth(r *mux.Router) {
 	r.Handle("/login", ensureHTTPS(dgoauth2.StateHandler(stateConfig, dgoauth2.LoginHandler(a.UserConfig, nil)))).Name("login")
 	r.Handle("/oauth2", ensureHTTPS(dgoauth2.StateHandler(stateConfig, CallbackHandler(a.UserConfig, a.Fetcher, session.IssueSession(a.SessionStore, a.UAAAPI), session.LogoutHandler(a.SessionStore))))).Name("oauth2")
 	r.Handle("/logout", ensureHTTPS(session.LogoutHandler(a.SessionStore))).Name("logout")
+}
+
+func ensureUser(next http.Handler, uaa uaa.API, origin string, s sessions.Store) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		userID, err := session.UserIDFromContext(r.Context())
+		if strings.TrimSpace(userID) != "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		if userID == "" || err != nil {
+			profile, err := user.ProfileFromContext(r.Context())
+			if err != nil || profile == nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			userID, err = uaa.CreateUser(profile.AccountName, origin, profile.AccountName, profile.Email)
+			if err != nil || strings.TrimSpace(userID) == "" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			r = r.WithContext(session.ContextWithUserID(r.Context(), userID))
+			session.UpdateSessionWithUserID(w, r, s, userID)
+		}
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
 }
 
 // Authorize guards access to protected resources by inspecting the user's token

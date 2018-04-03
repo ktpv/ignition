@@ -126,3 +126,40 @@ func testUserIDForAccountName(t *testing.T, when spec.G, it spec.S) {
 		})
 	})
 }
+
+func TestCreateUser(t *testing.T) {
+	spec.Run(t, "CreateUser", testCreateUser, spec.Report(report.Terminal{}))
+}
+
+func testCreateUser(t *testing.T, when spec.G, it spec.S) {
+	var (
+		a *uaa.Client
+		s *httptest.Server
+	)
+
+	it.Before(func() {
+		RegisterTestingT(t)
+		s = internal.ServeFromTestdata(t, "users.json", func() {})
+		a = &uaa.Client{URL: s.URL}
+	})
+
+	it.After(func() {
+		s.Close()
+	})
+
+	when("there is a valid token and client", func() {
+		it.Before(func() {
+			a.Token = &oauth2.Token{
+				AccessToken: "test-token",
+				Expiry:      time.Now().Add(24 * time.Hour),
+			}
+			a.Client = http.DefaultClient
+		})
+
+		it("creates the user", func() {
+			_, err := a.CreateUser("user", "uaa", "external-user", "user@example.com")
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+}

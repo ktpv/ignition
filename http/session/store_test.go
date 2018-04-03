@@ -249,3 +249,46 @@ func testLogoutHandler(t *testing.T, when spec.G, it spec.S) {
 		Expect(w.Header().Get("Location")).To(Equal("/"))
 	})
 }
+
+func TestUpdateSessionWithUserID(t *testing.T) {
+	spec.Run(t, "UpdateSessionWithUserID", testUpdateSessionWithUserID, spec.Report(report.Terminal{}))
+}
+
+func testUpdateSessionWithUserID(t *testing.T, when spec.G, it spec.S) {
+	var (
+		fakeSessionStore *sessionfakes.FakeStore
+		s                *sessions.Session
+	)
+
+	it.Before(func() {
+		RegisterTestingT(t)
+		fakeSessionStore = &sessionfakes.FakeStore{}
+		s = sessions.NewSession(fakeSessionStore, "ignition-test")
+
+		fakeSessionStore.NewReturns(s)
+		fakeSessionStore.SaveReturns(nil)
+		fakeSessionStore.GetReturns(s, nil)
+	})
+
+	it("saves the user id when it is non-zero", func() {
+		w := httptest.NewRecorder()
+		session.UpdateSessionWithUserID(w, httptest.NewRequest(http.MethodGet, "/", nil), fakeSessionStore, "test-user-id")
+		Expect(fakeSessionStore.SaveCallCount()).To(Equal(1))
+		Expect(s.Values).To(HaveKeyWithValue("uaaid", "test-user-id"))
+	})
+
+	it("does not save an empty user id", func() {
+		w := httptest.NewRecorder()
+		session.UpdateSessionWithUserID(w, httptest.NewRequest(http.MethodGet, "/", nil), fakeSessionStore, "")
+		Expect(fakeSessionStore.SaveCallCount()).To(Equal(0))
+		Expect(s.Values).NotTo(HaveKeyWithValue("uaaid", ""))
+	})
+
+	it("does not save if the session cannot be retrieved", func() {
+		w := httptest.NewRecorder()
+		fakeSessionStore.GetReturns(nil, errors.New("test error"))
+		session.UpdateSessionWithUserID(w, httptest.NewRequest(http.MethodGet, "/", nil), fakeSessionStore, "test-user-id")
+		Expect(fakeSessionStore.SaveCallCount()).To(Equal(0))
+		Expect(s.Values).NotTo(HaveKeyWithValue("uaaid", ""))
+	})
+}

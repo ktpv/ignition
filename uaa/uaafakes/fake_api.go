@@ -21,6 +21,22 @@ type FakeAPI struct {
 		result1 string
 		result2 error
 	}
+	CreateUserStub        func(username, origin, externalID, email string) (string, error)
+	createUserMutex       sync.RWMutex
+	createUserArgsForCall []struct {
+		username   string
+		origin     string
+		externalID string
+		email      string
+	}
+	createUserReturns struct {
+		result1 string
+		result2 error
+	}
+	createUserReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -76,11 +92,67 @@ func (fake *FakeAPI) UserIDForAccountNameReturnsOnCall(i int, result1 string, re
 	}{result1, result2}
 }
 
+func (fake *FakeAPI) CreateUser(username string, origin string, externalID string, email string) (string, error) {
+	fake.createUserMutex.Lock()
+	ret, specificReturn := fake.createUserReturnsOnCall[len(fake.createUserArgsForCall)]
+	fake.createUserArgsForCall = append(fake.createUserArgsForCall, struct {
+		username   string
+		origin     string
+		externalID string
+		email      string
+	}{username, origin, externalID, email})
+	fake.recordInvocation("CreateUser", []interface{}{username, origin, externalID, email})
+	fake.createUserMutex.Unlock()
+	if fake.CreateUserStub != nil {
+		return fake.CreateUserStub(username, origin, externalID, email)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.createUserReturns.result1, fake.createUserReturns.result2
+}
+
+func (fake *FakeAPI) CreateUserCallCount() int {
+	fake.createUserMutex.RLock()
+	defer fake.createUserMutex.RUnlock()
+	return len(fake.createUserArgsForCall)
+}
+
+func (fake *FakeAPI) CreateUserArgsForCall(i int) (string, string, string, string) {
+	fake.createUserMutex.RLock()
+	defer fake.createUserMutex.RUnlock()
+	return fake.createUserArgsForCall[i].username, fake.createUserArgsForCall[i].origin, fake.createUserArgsForCall[i].externalID, fake.createUserArgsForCall[i].email
+}
+
+func (fake *FakeAPI) CreateUserReturns(result1 string, result2 error) {
+	fake.CreateUserStub = nil
+	fake.createUserReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) CreateUserReturnsOnCall(i int, result1 string, result2 error) {
+	fake.CreateUserStub = nil
+	if fake.createUserReturnsOnCall == nil {
+		fake.createUserReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.createUserReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeAPI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.userIDForAccountNameMutex.RLock()
 	defer fake.userIDForAccountNameMutex.RUnlock()
+	fake.createUserMutex.RLock()
+	defer fake.createUserMutex.RUnlock()
 	return fake.invocations
 }
 

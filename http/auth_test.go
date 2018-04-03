@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +12,8 @@ import (
 	"github.com/dghubble/sessions"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/ignition/http/session"
+	"github.com/pivotalservices/ignition/http/session/sessionfakes"
+	"github.com/pivotalservices/ignition/uaa/uaafakes"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/pivotalservices/ignition/user/openid"
 	"github.com/pivotalservices/ignition/user/openid/openidfakes"
@@ -213,5 +216,80 @@ func testCallbackHandler(t *testing.T, when spec.G, it spec.S) {
 		p, err := user.ProfileFromContext(ctxActual)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(p.Email).To(Equal("test@pivotal.io"))
+	})
+}
+
+func TestEnsureUser(t *testing.T) {
+	spec.Run(t, "EnsureUser", testEnsureUser, spec.Report(report.Terminal{}))
+}
+
+func testEnsureUser(t *testing.T, when spec.G, it spec.S) {
+	var (
+		called           bool
+		next             http.Handler
+		handler          http.Handler
+		w                *httptest.ResponseRecorder
+		r                *http.Request
+		uaa              *uaafakes.FakeAPI
+		fakeSessionStore *sessionfakes.FakeStore
+	)
+
+	it.Before(func() {
+		RegisterTestingT(t)
+
+		called = false
+		uaa = &uaafakes.FakeAPI{}
+		next = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			called = true
+		})
+		fakeSessionStore = &sessionfakes.FakeStore{}
+		s := sessions.NewSession(fakeSessionStore, "ignition-test")
+		fakeSessionStore.SaveReturns(nil)
+		fakeSessionStore.GetReturns(s, nil)
+		handler = ensureUser(next, uaa, "origin", fakeSessionStore)
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest(http.MethodGet, "/", nil)
+	})
+
+	when("the user ID is present in the context", func() {
+		it("calls the next handler", func() {
+			ctx := session.ContextWithUserID(context.Background(), "test-user")
+			handler.ServeHTTP(w, r.WithContext(ctx))
+			Expect(called).To(BeTrue())
+		})
+	})
+
+	when("the user ID not present in the context", func() {
+		when("there is no profile in the context", func() {
+			it("is unauthorized", func() {
+				handler.ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusUnauthorized))
+			})
+		})
+
+		when("there is a profile in the context", func() {
+			var ctx context.Context
+
+			it.Before(func() {
+				ctx = user.WithProfile(context.Background(), &user.Profile{
+					Email:       "test@pivotal.io",
+					AccountName: "testaccount",
+					Name:        "test",
+				})
+			})
+
+			it("creates the user and calls the next handler", func() {
+				uaa.CreateUserReturns("test-user-id", nil)
+				handler.ServeHTTP(w, r.WithContext(ctx))
+				Expect(called).To(BeTrue())
+				Expect(uaa.CreateUserCallCount()).To(Equal(1))
+			})
+
+			it("is unauthorized if the user cannot be created", func() {
+				uaa.CreateUserReturns("", errors.New("test error"))
+				handler.ServeHTTP(w, r.WithContext(ctx))
+				Expect(w.Code).To(Equal(http.StatusUnauthorized))
+			})
+		})
 	})
 }

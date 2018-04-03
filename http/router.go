@@ -68,7 +68,14 @@ func (a *API) createRouter() *mux.Router {
 	}))).Name("index")
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
 	r.Handle("/profile", ensureHTTPS(session.PopulateContext(Authorize(profileHandler(), a.AuthorizedDomain), a.SessionStore)))
-	r.Handle("/organization", ensureHTTPS(session.PopulateContext(Authorize(organization.Handler(a.AppsURL, a.OrgPrefix, a.QuotaID, a.SpaceName, a.CCAPI), a.AuthorizedDomain), a.SessionStore)))
+
+	orgHandler := organization.Handler(a.AppsURL, a.OrgPrefix, a.QuotaID, a.SpaceName, a.CCAPI)
+	orgHandler = ensureUser(orgHandler, a.UAAAPI, a.UAAOrigin, a.SessionStore)
+	orgHandler = Authorize(orgHandler, a.AuthorizedDomain)
+	orgHandler = session.PopulateContext(orgHandler, a.SessionStore)
+	orgHandler = ensureHTTPS(orgHandler)
+	r.Handle("/organization", orgHandler)
+
 	a.handleAuth(r)
 	r.HandleFunc("/403", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
