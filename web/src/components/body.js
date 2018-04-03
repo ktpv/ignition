@@ -22,12 +22,16 @@ class Body extends React.Component {
     window.fetch('/organization', {
       credentials: 'same-origin'
     }).then(response => {
-        if (!response.ok) {
+      if (!response.ok) {
+        return
+      }
+      return response.json()
+    }).then(response => {
+        if (!response) {
           return
-        } 
-        const url = response.json().url
-        this.setState({orgUrl: url})
-        window.location = url
+        }
+        this.setState({orgUrl: response.url})
+        window.location = response.url
       })
   }
 

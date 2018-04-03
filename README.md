@@ -60,6 +60,7 @@ To authenticate against google:
   * IGNITION_CCAPI_CLIENT_ID="cf"
   * IGNITION_CCAPI_CLIENT_SECRET=""
   * IGNITION_QUOTA_ID="your-quota-id-here"
+  * IGNITION_UAA_ORIGIN="origin-here"
 
 To authenticate against PCF SSO tile:
 1. Configure the PCF SSO tile in your PCF foundation http://docs.pivotal.io/p-identity/
@@ -81,6 +82,7 @@ To authenticate against PCF SSO tile:
   * IGNITION_CCAPI_CLIENT_ID="cf"
   * IGNITION_CCAPI_CLIENT_SECRET=""
   * IGNITION_QUOTA_ID="your-quota-id-here"
+  * IGNITION_UAA_ORIGIN="origin-here"
 
 ### Run the application locally
 

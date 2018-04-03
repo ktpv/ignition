@@ -34,6 +34,7 @@ type envConfig struct {
 	Scheme            string   `envconfig:"scheme" default:"http"`                                // IGNITION_SCHEME
 	WebRoot           string   `envconfig:"web_root"`                                             // IGNITION_WEB_ROOT
 	UAAURL            string   `envconfig:"uaa_url" required:"true"`                              // IGNITION_UAA_URL
+	UAAOrigin         string   `envconfig:"uaa_origin" required:"true"`                           // IGNITION_UAA_ORIGIN
 	AppsURL           string   `envconfig:"apps_url" required:"true"`                             // IGNITION_APPS_URL
 	CCAPIURL          string   `envconfig:"ccapi_url" required:"true"`                            // IGNITION_CCAPI_URL
 	CCAPIClientID     string   `envconfig:"ccapi_client_id" default:"cf"`                         // IGNITION_CCAPI_CLIENT_ID
@@ -42,6 +43,7 @@ type envConfig struct {
 	CCAPIPassword     string   `envconfig:"ccapi_password" required:"true"`                       // IGNITION_CCAPI_PASSWORD
 	OrgPrefix         string   `envconfig:"org_prefix" default:"ignition"`                        // IGNITION_ORG_PREFIX
 	QuotaID           string   `envconfig:"quota_id" required:"true"`                             // IGNITION_QUOTA_ID
+	SpaceName         string   `envconfig:"space_name" default:"playground"`                      // IGNITION_SPACE_NAME
 }
 
 func main() {
@@ -166,6 +168,8 @@ func NewAPI() (*http.API, error) {
 		OrgPrefix:    c.OrgPrefix,
 		QuotaID:      c.QuotaID,
 		UAAAPI:       uaaAPI,
+		SpaceName:    c.SpaceName,
+		UAAOrigin:    c.UAAOrigin,
 	}
 	return &api, nil
 }

@@ -38,6 +38,7 @@ func resetEnv() {
 	os.Unsetenv("PORT")
 	os.Unsetenv("IGNITION_ORG_PREFIX")
 	os.Unsetenv("IGNITION_QUOTA_ID")
+	os.Unsetenv("IGNITION_UAA_ORIGIN")
 }
 
 func TestIgnitionMain(t *testing.T) {
@@ -77,6 +78,7 @@ func TestIgnitionMain(t *testing.T) {
 				os.Setenv("IGNITION_CCAPI_USERNAME", "test-ccapi-username")
 				os.Setenv("IGNITION_CCAPI_PASSWORD", "test-ccapi-password")
 				os.Setenv("IGNITION_QUOTA_ID", "test-quotaid")
+				os.Setenv("IGNITION_UAA_ORIGIN", "test-origin")
 			})
 
 			it("does not return an error", func() {

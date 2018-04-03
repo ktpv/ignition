@@ -1,7 +1,6 @@
-package http
+package organization_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -10,17 +9,18 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/gomega"
 	"github.com/pivotalservices/ignition/cloudfoundry/cloudfoundryfakes"
+	"github.com/pivotalservices/ignition/http/organization"
 	"github.com/pivotalservices/ignition/http/session"
 	"github.com/pivotalservices/ignition/user"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
-func TestOrganizationHandler(t *testing.T) {
-	spec.Run(t, "OrganizationHandler", testOrganizationHandler, spec.Report(report.Terminal{}))
+func TestHandler(t *testing.T) {
+	spec.Run(t, "Handler", testHandler, spec.Report(report.Terminal{}))
 }
 
-func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
+func testHandler(t *testing.T, when spec.G, it spec.S) {
 	var r *http.Request
 	var w *httptest.ResponseRecorder
 	var c *cloudfoundryfakes.FakeAPI
@@ -35,7 +35,7 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 	when("there is no profile in the context", func() {
 		it("is not found", func() {
 			r = httptest.NewRequest(http.MethodGet, "/", nil)
-			organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
+			organization.Handler("http://example.net", "ignition", "test-quota-id", "playground", c).ServeHTTP(w, r)
 			Expect(w.Code).To(Equal(http.StatusNotFound))
 		})
 	})
@@ -47,7 +47,7 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 				AccountName: "testuser@test.com",
 			}
 			r = r.WithContext(user.WithProfile(r.Context(), profile))
-			organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
+			organization.Handler("http://example.net", "ignition", "test-quota-id", "playground", c).ServeHTTP(w, r)
 			Expect(w.Code).To(Equal(http.StatusNotFound))
 		})
 	})
@@ -66,9 +66,9 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 				c.ListOrgsByQueryReturns(nil, errors.New("test error"))
 			})
 
-			it("is an internal server error", func() {
-				organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
-				Expect(w.Code).To(Equal(http.StatusInternalServerError))
+			it("is not found", func() {
+				organization.Handler("http://example.net", "ignition", "test-quota-id", "playground", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusNotFound))
 			})
 		})
 
@@ -77,9 +77,16 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 				c.ListOrgsByQueryReturns(nil, nil)
 			})
 
-			it("is not found", func() {
-				organizationHandler("http://example.net", "ignition", "test-quota-id", c).ServeHTTP(w, r)
-				Expect(w.Code).To(Equal(http.StatusNotFound))
+			it("creates the org", func() {
+				c.CreateOrgReturns(cfclient.Org{
+					Guid:                        "test-org-guid",
+					Name:                        "ignition-testuser",
+					QuotaDefinitionGuid:         "test-quota-id",
+					DefaultIsolationSegmentGuid: "test-iso-segment-id",
+				}, nil)
+				organization.Handler("http://example.net", "ignition", "test-quota-id", "playground", c).ServeHTTP(w, r)
+				Expect(w.Code).To(Equal(http.StatusOK))
+				Expect(w.Body.String()).To(ContainSubstring("ignition-testuser"))
 			})
 		})
 
@@ -106,77 +113,43 @@ func testOrganizationHandler(t *testing.T, when spec.G, it spec.S) {
 			})
 
 			it("selects the correct org when there is a name match", func() {
-				organizationHandler("http://example.net", "ignition", "test-quota2-id", c).ServeHTTP(w, r)
+				organization.Handler("http://example.net", "ignition", "test-quota2-id", "playground", c).ServeHTTP(w, r)
 				Expect(w.Code).To(Equal(http.StatusOK))
 				Expect(w.Body.String()).To(ContainSubstring("test-org-1"))
 			})
 
-			it("is not found when there is no name or quota match", func() {
-				organizationHandler("http://example.net", "ignition1", "test-quota2-id", c).ServeHTTP(w, r)
-				Expect(w.Code).To(Equal(http.StatusNotFound))
+			when("creating an org succeeds", func() {
+				it.Before(func() {
+					c.CreateOrgReturns(cfclient.Org{
+						Guid:                        "test-org-guid",
+						Name:                        "ignition1-testuser",
+						QuotaDefinitionGuid:         "test-quota2-id",
+						DefaultIsolationSegmentGuid: "test-iso-segment-id",
+					}, nil)
+				})
+
+				it("creates the org when there is no name or quota match", func() {
+					organization.Handler("http://example.net", "ignition1", "test-quota2-id", "playground", c).ServeHTTP(w, r)
+					Expect(w.Code).To(Equal(http.StatusOK))
+					Expect(w.Body.String()).To(ContainSubstring("ignition1-testuser"))
+				})
+			})
+
+			when("creating an org fails", func() {
+				it.Before(func() {
+					c.CreateOrgReturns(cfclient.Org{}, errors.New("test error"))
+				})
+
+				it("is not found", func() {
+					organization.Handler("http://example.net", "ignition1", "test-quota2-id", "playground", c).ServeHTTP(w, r)
+					Expect(w.Code).To(Equal(http.StatusNotFound))
+				})
 			})
 
 			it("selects the correct org when there is a quota match (but not a name match)", func() {
-				organizationHandler("http://example.net", "ignition2", "ignition-quota-id", c).ServeHTTP(w, r)
+				organization.Handler("http://example.net", "ignition2", "ignition-quota-id", "playground", c).ServeHTTP(w, r)
 				Expect(w.Code).To(Equal(http.StatusOK))
 				Expect(w.Body.String()).To(ContainSubstring("test-org-1"))
-			})
-		})
-	})
-}
-
-func TestUserFromContext(t *testing.T) {
-	spec.Run(t, "UserFromContext", testUserFromContext, spec.Report(report.Terminal{}))
-}
-
-func testUserFromContext(t *testing.T, when spec.G, it spec.S) {
-	var ctx context.Context
-	it.Before(func() {
-		RegisterTestingT(t)
-		ctx = context.Background()
-	})
-
-	when("there is no user", func() {
-		it("errors", func() {
-			_, _, err := userFromContext(ctx)
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
-	when("the profile is nil", func() {
-		it.Before(func() {
-			ctx = user.WithProfile(ctx, nil)
-		})
-		it("errors", func() {
-			_, _, err := userFromContext(ctx)
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
-	when("there is a valid profile", func() {
-		it.Before(func() {
-			ctx = user.WithProfile(ctx, &user.Profile{
-				AccountName: "test-user",
-			})
-		})
-
-		when("there is no user id", func() {
-			it("errors", func() {
-				_, _, err := userFromContext(ctx)
-				Expect(err).To(HaveOccurred())
-			})
-		})
-
-		when("there is a user ID", func() {
-			it.Before(func() {
-				ctx = session.ContextWithUserID(ctx, "test-user-id")
-			})
-
-			it("returns the user id and account name", func() {
-				userID, accountName, err := userFromContext(ctx)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(userID).To(Equal("test-user-id"))
-				Expect(accountName).To(Equal("test-user"))
 			})
 		})
 	})
@@ -192,17 +165,17 @@ func testOrgName(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	it("works with email addresses", func() {
-		Expect(orgName("ignition", "test@example.net")).To(Equal("ignition-test"))
-		Expect(orgName("igNiTion", "tEsT@example.net")).To(Equal("ignition-test"))
+		Expect(organization.Name("ignition", "test@example.net")).To(Equal("ignition-test"))
+		Expect(organization.Name("igNiTion", "tEsT@example.net")).To(Equal("ignition-test"))
 	})
 
 	it("works with domain accounts", func() {
-		Expect(orgName("ignition", "corp\\test")).To(Equal("ignition-test"))
-		Expect(orgName("igNiTion", "corp\\tEsT")).To(Equal("ignition-test"))
+		Expect(organization.Name("ignition", "corp\\test")).To(Equal("ignition-test"))
+		Expect(organization.Name("igNiTion", "corp\\tEsT")).To(Equal("ignition-test"))
 	})
 
 	it("works with plain accounts", func() {
-		Expect(orgName("ignition", "test")).To(Equal("ignition-test"))
-		Expect(orgName("igNiTion", "tEsT")).To(Equal("ignition-test"))
+		Expect(organization.Name("ignition", "test")).To(Equal("ignition-test"))
+		Expect(organization.Name("igNiTion", "tEsT")).To(Equal("ignition-test"))
 	})
 }

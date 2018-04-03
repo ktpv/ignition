@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pivotalservices/ignition/cloudfoundry"
+	"github.com/pivotalservices/ignition/http/organization"
 	"github.com/pivotalservices/ignition/http/session"
 	"github.com/pivotalservices/ignition/uaa"
 	"github.com/pivotalservices/ignition/user"
@@ -30,6 +31,7 @@ type API struct {
 	APIURL           string
 	AppsURL          string
 	UAAURL           string
+	UAAOrigin        string
 	UserConfig       *oauth2.Config
 	APIConfig        *oauth2.Config
 	APIUsername      string
@@ -40,6 +42,7 @@ type API struct {
 	UAAAPI           uaa.API
 	OrgPrefix        string
 	QuotaID          string
+	SpaceName        string
 }
 
 // URI is the combination of the scheme, domain, and port
@@ -65,7 +68,7 @@ func (a *API) createRouter() *mux.Router {
 	}))).Name("index")
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(path.Join(a.WebRoot, "assets")+string(os.PathSeparator))))).Name("assets")
 	r.Handle("/profile", ensureHTTPS(session.PopulateContext(Authorize(profileHandler(), a.AuthorizedDomain), a.SessionStore)))
-	r.Handle("/organization", ensureHTTPS(session.PopulateContext(Authorize(organizationHandler(a.AppsURL, a.OrgPrefix, a.QuotaID, a.CCAPI), a.AuthorizedDomain), a.SessionStore)))
+	r.Handle("/organization", ensureHTTPS(session.PopulateContext(Authorize(organization.Handler(a.AppsURL, a.OrgPrefix, a.QuotaID, a.SpaceName, a.CCAPI), a.AuthorizedDomain), a.SessionStore)))
 	a.handleAuth(r)
 	r.HandleFunc("/403", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)

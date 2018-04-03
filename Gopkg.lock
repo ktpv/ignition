@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/cloudfoundry-community/go-cfclient"
   packages = ["."]
-  revision = "992119ebf08b760f9836b9eddc52721d9318c060"
+  revision = "5065c14614fcd887ab13d39ea3327a0fd44ce133"
 
 [[projects]]
   name = "github.com/cloudfoundry-community/go-cfenv"
@@ -144,7 +144,7 @@
     "matchers/support/goraph/util",
     "types"
   ]
-  revision = "de89e61d40b75aa971a9fc3eae7f4fefabd6e0ee"
+  revision = "649b44d988ce182cabcda7dba01fcf3b6179ad19"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -178,7 +178,7 @@
     "ed25519/internal/edwards25519",
     "ssh/terminal"
   ]
-  revision = "182114d582623c1caa54f73de9c7224e23a48487"
+  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
 
 [[projects]]
   branch = "master"
@@ -190,7 +190,7 @@
     "html/atom",
     "html/charset"
   ]
-  revision = "d25186b37f34ebdbbea8f488ef055638dfab272d"
+  revision = "b68f30494add4df6bd8ef5e82803f308e7f7c59c"
 
 [[projects]]
   branch = "master"
@@ -200,7 +200,7 @@
     "clientcredentials",
     "internal"
   ]
-  revision = "2f32c3ac0fa4fb807a0fcefb0b6f2468a0d99bd0"
+  revision = "921ae394b9430ed4fb549668d7b087601bd60a81"
 
 [[projects]]
   branch = "master"
@@ -209,7 +209,7 @@
     "unix",
     "windows"
   ]
-  revision = "13d03a9a82fba647c21a0ef8fba44a795d0f0835"
+  revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -242,18 +242,7 @@
     "go/ast/astutil",
     "imports"
   ]
-  revision = "77106db15f689a60e7d4e085d967ac557b918fb2"
-
-[[projects]]
-  branch = "master"
-  name = "google.golang.org/api"
-  packages = [
-    "gensupport",
-    "googleapi",
-    "googleapi/internal/uritemplates",
-    "oauth2/v2"
-  ]
-  revision = "fd84a7d742f699417e6d39a933a987ff2386c99c"
+  revision = "ac136b6c2db7c4d43955e4bc7174db36dc0539c0"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -276,18 +265,18 @@
     "cipher",
     "json"
   ]
-  revision = "6ee92191fea850cdcab9a18867abf5f521cdbadb"
-  version = "v2.1.4"
+  revision = "76dd09796242edb5b897103a75df2645c028c960"
+  version = "v2.1.6"
 
 [[projects]]
-  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "4fc5987536ef307a24ca299aee7ae301cde3d221"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a6fde3c20dfa0399a28b3d1ba9e246da81e0ebfc0c788a440020650ad184fff5"
+  inputs-digest = "0c967512af47a50ecb559dee32e9cb88337aa73b0924d326d7902a8f055ed57c"
   solver-name = "gps-cdcl"
   solver-version = 1

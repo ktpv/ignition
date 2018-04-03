@@ -10,6 +10,19 @@ import (
 )
 
 type FakeAPI struct {
+	CreateOrgStub        func(req cfclient.OrgRequest) (cfclient.Org, error)
+	createOrgMutex       sync.RWMutex
+	createOrgArgsForCall []struct {
+		req cfclient.OrgRequest
+	}
+	createOrgReturns struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	createOrgReturnsOnCall map[int]struct {
+		result1 cfclient.Org
+		result2 error
+	}
 	ListOrgsByQueryStub        func(query url.Values) ([]cfclient.Org, error)
 	listOrgsByQueryMutex       sync.RWMutex
 	listOrgsByQueryArgsForCall []struct {
@@ -23,8 +36,156 @@ type FakeAPI struct {
 		result1 []cfclient.Org
 		result2 error
 	}
+	CreateSpaceStub        func(req cfclient.SpaceRequest) (cfclient.Space, error)
+	createSpaceMutex       sync.RWMutex
+	createSpaceArgsForCall []struct {
+		req cfclient.SpaceRequest
+	}
+	createSpaceReturns struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	createSpaceReturnsOnCall map[int]struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	AssociateOrgUserStub        func(orgGUID, userGUID string) (cfclient.Org, error)
+	associateOrgUserMutex       sync.RWMutex
+	associateOrgUserArgsForCall []struct {
+		orgGUID  string
+		userGUID string
+	}
+	associateOrgUserReturns struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	associateOrgUserReturnsOnCall map[int]struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	AssociateOrgAuditorStub        func(orgGUID, userGUID string) (cfclient.Org, error)
+	associateOrgAuditorMutex       sync.RWMutex
+	associateOrgAuditorArgsForCall []struct {
+		orgGUID  string
+		userGUID string
+	}
+	associateOrgAuditorReturns struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	associateOrgAuditorReturnsOnCall map[int]struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	AssociateOrgManagerStub        func(orgGUID, userGUID string) (cfclient.Org, error)
+	associateOrgManagerMutex       sync.RWMutex
+	associateOrgManagerArgsForCall []struct {
+		orgGUID  string
+		userGUID string
+	}
+	associateOrgManagerReturns struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	associateOrgManagerReturnsOnCall map[int]struct {
+		result1 cfclient.Org
+		result2 error
+	}
+	AssociateSpaceAuditorStub        func(spaceGUID, userGUID string) (cfclient.Space, error)
+	associateSpaceAuditorMutex       sync.RWMutex
+	associateSpaceAuditorArgsForCall []struct {
+		spaceGUID string
+		userGUID  string
+	}
+	associateSpaceAuditorReturns struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	associateSpaceAuditorReturnsOnCall map[int]struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	AssociateSpaceDeveloperStub        func(spaceGUID, userGUID string) (cfclient.Space, error)
+	associateSpaceDeveloperMutex       sync.RWMutex
+	associateSpaceDeveloperArgsForCall []struct {
+		spaceGUID string
+		userGUID  string
+	}
+	associateSpaceDeveloperReturns struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	associateSpaceDeveloperReturnsOnCall map[int]struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	AssociateSpaceManagerStub        func(spaceGUID, userGUID string) (cfclient.Space, error)
+	associateSpaceManagerMutex       sync.RWMutex
+	associateSpaceManagerArgsForCall []struct {
+		spaceGUID string
+		userGUID  string
+	}
+	associateSpaceManagerReturns struct {
+		result1 cfclient.Space
+		result2 error
+	}
+	associateSpaceManagerReturnsOnCall map[int]struct {
+		result1 cfclient.Space
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeAPI) CreateOrg(req cfclient.OrgRequest) (cfclient.Org, error) {
+	fake.createOrgMutex.Lock()
+	ret, specificReturn := fake.createOrgReturnsOnCall[len(fake.createOrgArgsForCall)]
+	fake.createOrgArgsForCall = append(fake.createOrgArgsForCall, struct {
+		req cfclient.OrgRequest
+	}{req})
+	fake.recordInvocation("CreateOrg", []interface{}{req})
+	fake.createOrgMutex.Unlock()
+	if fake.CreateOrgStub != nil {
+		return fake.CreateOrgStub(req)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.createOrgReturns.result1, fake.createOrgReturns.result2
+}
+
+func (fake *FakeAPI) CreateOrgCallCount() int {
+	fake.createOrgMutex.RLock()
+	defer fake.createOrgMutex.RUnlock()
+	return len(fake.createOrgArgsForCall)
+}
+
+func (fake *FakeAPI) CreateOrgArgsForCall(i int) cfclient.OrgRequest {
+	fake.createOrgMutex.RLock()
+	defer fake.createOrgMutex.RUnlock()
+	return fake.createOrgArgsForCall[i].req
+}
+
+func (fake *FakeAPI) CreateOrgReturns(result1 cfclient.Org, result2 error) {
+	fake.CreateOrgStub = nil
+	fake.createOrgReturns = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) CreateOrgReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+	fake.CreateOrgStub = nil
+	if fake.createOrgReturnsOnCall == nil {
+		fake.createOrgReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Org
+			result2 error
+		})
+	}
+	fake.createOrgReturnsOnCall[i] = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeAPI) ListOrgsByQuery(query url.Values) ([]cfclient.Org, error) {
@@ -78,11 +239,390 @@ func (fake *FakeAPI) ListOrgsByQueryReturnsOnCall(i int, result1 []cfclient.Org,
 	}{result1, result2}
 }
 
+func (fake *FakeAPI) CreateSpace(req cfclient.SpaceRequest) (cfclient.Space, error) {
+	fake.createSpaceMutex.Lock()
+	ret, specificReturn := fake.createSpaceReturnsOnCall[len(fake.createSpaceArgsForCall)]
+	fake.createSpaceArgsForCall = append(fake.createSpaceArgsForCall, struct {
+		req cfclient.SpaceRequest
+	}{req})
+	fake.recordInvocation("CreateSpace", []interface{}{req})
+	fake.createSpaceMutex.Unlock()
+	if fake.CreateSpaceStub != nil {
+		return fake.CreateSpaceStub(req)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.createSpaceReturns.result1, fake.createSpaceReturns.result2
+}
+
+func (fake *FakeAPI) CreateSpaceCallCount() int {
+	fake.createSpaceMutex.RLock()
+	defer fake.createSpaceMutex.RUnlock()
+	return len(fake.createSpaceArgsForCall)
+}
+
+func (fake *FakeAPI) CreateSpaceArgsForCall(i int) cfclient.SpaceRequest {
+	fake.createSpaceMutex.RLock()
+	defer fake.createSpaceMutex.RUnlock()
+	return fake.createSpaceArgsForCall[i].req
+}
+
+func (fake *FakeAPI) CreateSpaceReturns(result1 cfclient.Space, result2 error) {
+	fake.CreateSpaceStub = nil
+	fake.createSpaceReturns = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) CreateSpaceReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
+	fake.CreateSpaceStub = nil
+	if fake.createSpaceReturnsOnCall == nil {
+		fake.createSpaceReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Space
+			result2 error
+		})
+	}
+	fake.createSpaceReturnsOnCall[i] = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateOrgUser(orgGUID string, userGUID string) (cfclient.Org, error) {
+	fake.associateOrgUserMutex.Lock()
+	ret, specificReturn := fake.associateOrgUserReturnsOnCall[len(fake.associateOrgUserArgsForCall)]
+	fake.associateOrgUserArgsForCall = append(fake.associateOrgUserArgsForCall, struct {
+		orgGUID  string
+		userGUID string
+	}{orgGUID, userGUID})
+	fake.recordInvocation("AssociateOrgUser", []interface{}{orgGUID, userGUID})
+	fake.associateOrgUserMutex.Unlock()
+	if fake.AssociateOrgUserStub != nil {
+		return fake.AssociateOrgUserStub(orgGUID, userGUID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.associateOrgUserReturns.result1, fake.associateOrgUserReturns.result2
+}
+
+func (fake *FakeAPI) AssociateOrgUserCallCount() int {
+	fake.associateOrgUserMutex.RLock()
+	defer fake.associateOrgUserMutex.RUnlock()
+	return len(fake.associateOrgUserArgsForCall)
+}
+
+func (fake *FakeAPI) AssociateOrgUserArgsForCall(i int) (string, string) {
+	fake.associateOrgUserMutex.RLock()
+	defer fake.associateOrgUserMutex.RUnlock()
+	return fake.associateOrgUserArgsForCall[i].orgGUID, fake.associateOrgUserArgsForCall[i].userGUID
+}
+
+func (fake *FakeAPI) AssociateOrgUserReturns(result1 cfclient.Org, result2 error) {
+	fake.AssociateOrgUserStub = nil
+	fake.associateOrgUserReturns = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateOrgUserReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+	fake.AssociateOrgUserStub = nil
+	if fake.associateOrgUserReturnsOnCall == nil {
+		fake.associateOrgUserReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Org
+			result2 error
+		})
+	}
+	fake.associateOrgUserReturnsOnCall[i] = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateOrgAuditor(orgGUID string, userGUID string) (cfclient.Org, error) {
+	fake.associateOrgAuditorMutex.Lock()
+	ret, specificReturn := fake.associateOrgAuditorReturnsOnCall[len(fake.associateOrgAuditorArgsForCall)]
+	fake.associateOrgAuditorArgsForCall = append(fake.associateOrgAuditorArgsForCall, struct {
+		orgGUID  string
+		userGUID string
+	}{orgGUID, userGUID})
+	fake.recordInvocation("AssociateOrgAuditor", []interface{}{orgGUID, userGUID})
+	fake.associateOrgAuditorMutex.Unlock()
+	if fake.AssociateOrgAuditorStub != nil {
+		return fake.AssociateOrgAuditorStub(orgGUID, userGUID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.associateOrgAuditorReturns.result1, fake.associateOrgAuditorReturns.result2
+}
+
+func (fake *FakeAPI) AssociateOrgAuditorCallCount() int {
+	fake.associateOrgAuditorMutex.RLock()
+	defer fake.associateOrgAuditorMutex.RUnlock()
+	return len(fake.associateOrgAuditorArgsForCall)
+}
+
+func (fake *FakeAPI) AssociateOrgAuditorArgsForCall(i int) (string, string) {
+	fake.associateOrgAuditorMutex.RLock()
+	defer fake.associateOrgAuditorMutex.RUnlock()
+	return fake.associateOrgAuditorArgsForCall[i].orgGUID, fake.associateOrgAuditorArgsForCall[i].userGUID
+}
+
+func (fake *FakeAPI) AssociateOrgAuditorReturns(result1 cfclient.Org, result2 error) {
+	fake.AssociateOrgAuditorStub = nil
+	fake.associateOrgAuditorReturns = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateOrgAuditorReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+	fake.AssociateOrgAuditorStub = nil
+	if fake.associateOrgAuditorReturnsOnCall == nil {
+		fake.associateOrgAuditorReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Org
+			result2 error
+		})
+	}
+	fake.associateOrgAuditorReturnsOnCall[i] = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateOrgManager(orgGUID string, userGUID string) (cfclient.Org, error) {
+	fake.associateOrgManagerMutex.Lock()
+	ret, specificReturn := fake.associateOrgManagerReturnsOnCall[len(fake.associateOrgManagerArgsForCall)]
+	fake.associateOrgManagerArgsForCall = append(fake.associateOrgManagerArgsForCall, struct {
+		orgGUID  string
+		userGUID string
+	}{orgGUID, userGUID})
+	fake.recordInvocation("AssociateOrgManager", []interface{}{orgGUID, userGUID})
+	fake.associateOrgManagerMutex.Unlock()
+	if fake.AssociateOrgManagerStub != nil {
+		return fake.AssociateOrgManagerStub(orgGUID, userGUID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.associateOrgManagerReturns.result1, fake.associateOrgManagerReturns.result2
+}
+
+func (fake *FakeAPI) AssociateOrgManagerCallCount() int {
+	fake.associateOrgManagerMutex.RLock()
+	defer fake.associateOrgManagerMutex.RUnlock()
+	return len(fake.associateOrgManagerArgsForCall)
+}
+
+func (fake *FakeAPI) AssociateOrgManagerArgsForCall(i int) (string, string) {
+	fake.associateOrgManagerMutex.RLock()
+	defer fake.associateOrgManagerMutex.RUnlock()
+	return fake.associateOrgManagerArgsForCall[i].orgGUID, fake.associateOrgManagerArgsForCall[i].userGUID
+}
+
+func (fake *FakeAPI) AssociateOrgManagerReturns(result1 cfclient.Org, result2 error) {
+	fake.AssociateOrgManagerStub = nil
+	fake.associateOrgManagerReturns = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateOrgManagerReturnsOnCall(i int, result1 cfclient.Org, result2 error) {
+	fake.AssociateOrgManagerStub = nil
+	if fake.associateOrgManagerReturnsOnCall == nil {
+		fake.associateOrgManagerReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Org
+			result2 error
+		})
+	}
+	fake.associateOrgManagerReturnsOnCall[i] = struct {
+		result1 cfclient.Org
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateSpaceAuditor(spaceGUID string, userGUID string) (cfclient.Space, error) {
+	fake.associateSpaceAuditorMutex.Lock()
+	ret, specificReturn := fake.associateSpaceAuditorReturnsOnCall[len(fake.associateSpaceAuditorArgsForCall)]
+	fake.associateSpaceAuditorArgsForCall = append(fake.associateSpaceAuditorArgsForCall, struct {
+		spaceGUID string
+		userGUID  string
+	}{spaceGUID, userGUID})
+	fake.recordInvocation("AssociateSpaceAuditor", []interface{}{spaceGUID, userGUID})
+	fake.associateSpaceAuditorMutex.Unlock()
+	if fake.AssociateSpaceAuditorStub != nil {
+		return fake.AssociateSpaceAuditorStub(spaceGUID, userGUID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.associateSpaceAuditorReturns.result1, fake.associateSpaceAuditorReturns.result2
+}
+
+func (fake *FakeAPI) AssociateSpaceAuditorCallCount() int {
+	fake.associateSpaceAuditorMutex.RLock()
+	defer fake.associateSpaceAuditorMutex.RUnlock()
+	return len(fake.associateSpaceAuditorArgsForCall)
+}
+
+func (fake *FakeAPI) AssociateSpaceAuditorArgsForCall(i int) (string, string) {
+	fake.associateSpaceAuditorMutex.RLock()
+	defer fake.associateSpaceAuditorMutex.RUnlock()
+	return fake.associateSpaceAuditorArgsForCall[i].spaceGUID, fake.associateSpaceAuditorArgsForCall[i].userGUID
+}
+
+func (fake *FakeAPI) AssociateSpaceAuditorReturns(result1 cfclient.Space, result2 error) {
+	fake.AssociateSpaceAuditorStub = nil
+	fake.associateSpaceAuditorReturns = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateSpaceAuditorReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
+	fake.AssociateSpaceAuditorStub = nil
+	if fake.associateSpaceAuditorReturnsOnCall == nil {
+		fake.associateSpaceAuditorReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Space
+			result2 error
+		})
+	}
+	fake.associateSpaceAuditorReturnsOnCall[i] = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateSpaceDeveloper(spaceGUID string, userGUID string) (cfclient.Space, error) {
+	fake.associateSpaceDeveloperMutex.Lock()
+	ret, specificReturn := fake.associateSpaceDeveloperReturnsOnCall[len(fake.associateSpaceDeveloperArgsForCall)]
+	fake.associateSpaceDeveloperArgsForCall = append(fake.associateSpaceDeveloperArgsForCall, struct {
+		spaceGUID string
+		userGUID  string
+	}{spaceGUID, userGUID})
+	fake.recordInvocation("AssociateSpaceDeveloper", []interface{}{spaceGUID, userGUID})
+	fake.associateSpaceDeveloperMutex.Unlock()
+	if fake.AssociateSpaceDeveloperStub != nil {
+		return fake.AssociateSpaceDeveloperStub(spaceGUID, userGUID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.associateSpaceDeveloperReturns.result1, fake.associateSpaceDeveloperReturns.result2
+}
+
+func (fake *FakeAPI) AssociateSpaceDeveloperCallCount() int {
+	fake.associateSpaceDeveloperMutex.RLock()
+	defer fake.associateSpaceDeveloperMutex.RUnlock()
+	return len(fake.associateSpaceDeveloperArgsForCall)
+}
+
+func (fake *FakeAPI) AssociateSpaceDeveloperArgsForCall(i int) (string, string) {
+	fake.associateSpaceDeveloperMutex.RLock()
+	defer fake.associateSpaceDeveloperMutex.RUnlock()
+	return fake.associateSpaceDeveloperArgsForCall[i].spaceGUID, fake.associateSpaceDeveloperArgsForCall[i].userGUID
+}
+
+func (fake *FakeAPI) AssociateSpaceDeveloperReturns(result1 cfclient.Space, result2 error) {
+	fake.AssociateSpaceDeveloperStub = nil
+	fake.associateSpaceDeveloperReturns = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateSpaceDeveloperReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
+	fake.AssociateSpaceDeveloperStub = nil
+	if fake.associateSpaceDeveloperReturnsOnCall == nil {
+		fake.associateSpaceDeveloperReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Space
+			result2 error
+		})
+	}
+	fake.associateSpaceDeveloperReturnsOnCall[i] = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateSpaceManager(spaceGUID string, userGUID string) (cfclient.Space, error) {
+	fake.associateSpaceManagerMutex.Lock()
+	ret, specificReturn := fake.associateSpaceManagerReturnsOnCall[len(fake.associateSpaceManagerArgsForCall)]
+	fake.associateSpaceManagerArgsForCall = append(fake.associateSpaceManagerArgsForCall, struct {
+		spaceGUID string
+		userGUID  string
+	}{spaceGUID, userGUID})
+	fake.recordInvocation("AssociateSpaceManager", []interface{}{spaceGUID, userGUID})
+	fake.associateSpaceManagerMutex.Unlock()
+	if fake.AssociateSpaceManagerStub != nil {
+		return fake.AssociateSpaceManagerStub(spaceGUID, userGUID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.associateSpaceManagerReturns.result1, fake.associateSpaceManagerReturns.result2
+}
+
+func (fake *FakeAPI) AssociateSpaceManagerCallCount() int {
+	fake.associateSpaceManagerMutex.RLock()
+	defer fake.associateSpaceManagerMutex.RUnlock()
+	return len(fake.associateSpaceManagerArgsForCall)
+}
+
+func (fake *FakeAPI) AssociateSpaceManagerArgsForCall(i int) (string, string) {
+	fake.associateSpaceManagerMutex.RLock()
+	defer fake.associateSpaceManagerMutex.RUnlock()
+	return fake.associateSpaceManagerArgsForCall[i].spaceGUID, fake.associateSpaceManagerArgsForCall[i].userGUID
+}
+
+func (fake *FakeAPI) AssociateSpaceManagerReturns(result1 cfclient.Space, result2 error) {
+	fake.AssociateSpaceManagerStub = nil
+	fake.associateSpaceManagerReturns = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAPI) AssociateSpaceManagerReturnsOnCall(i int, result1 cfclient.Space, result2 error) {
+	fake.AssociateSpaceManagerStub = nil
+	if fake.associateSpaceManagerReturnsOnCall == nil {
+		fake.associateSpaceManagerReturnsOnCall = make(map[int]struct {
+			result1 cfclient.Space
+			result2 error
+		})
+	}
+	fake.associateSpaceManagerReturnsOnCall[i] = struct {
+		result1 cfclient.Space
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeAPI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.createOrgMutex.RLock()
+	defer fake.createOrgMutex.RUnlock()
 	fake.listOrgsByQueryMutex.RLock()
 	defer fake.listOrgsByQueryMutex.RUnlock()
+	fake.createSpaceMutex.RLock()
+	defer fake.createSpaceMutex.RUnlock()
+	fake.associateOrgUserMutex.RLock()
+	defer fake.associateOrgUserMutex.RUnlock()
+	fake.associateOrgAuditorMutex.RLock()
+	defer fake.associateOrgAuditorMutex.RUnlock()
+	fake.associateOrgManagerMutex.RLock()
+	defer fake.associateOrgManagerMutex.RUnlock()
+	fake.associateSpaceAuditorMutex.RLock()
+	defer fake.associateSpaceAuditorMutex.RUnlock()
+	fake.associateSpaceDeveloperMutex.RLock()
+	defer fake.associateSpaceDeveloperMutex.RUnlock()
+	fake.associateSpaceManagerMutex.RLock()
+	defer fake.associateSpaceManagerMutex.RUnlock()
 	return fake.invocations
 }
 

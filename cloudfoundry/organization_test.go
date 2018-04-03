@@ -12,11 +12,11 @@ import (
 	"github.com/sclevine/spec/report"
 )
 
-func TestOrg(t *testing.T) {
-	spec.Run(t, "Org", testOrg, spec.Report(report.Terminal{}))
+func TestOrgsForUserID(t *testing.T) {
+	spec.Run(t, "Org", testOrgsForUserID, spec.Report(report.Terminal{}))
 }
 
-func testOrg(t *testing.T, when spec.G, it spec.S) {
+func testOrgsForUserID(t *testing.T, when spec.G, it spec.S) {
 	it.Before(func() {
 		RegisterTestingT(t)
 	})
@@ -52,5 +52,48 @@ func testOrg(t *testing.T, when spec.G, it spec.S) {
 		Expect(orgs[0].QuotaDefinitionGUID).To(Equal("321"))
 		Expect(orgs[0].DefaultIsolationSegmentGUID).To(Equal("987"))
 		Expect(orgs[0].URL).To(Equal("https://example.com/organizations/1234"))
+	})
+}
+
+func TestCreateOrg(t *testing.T) {
+	spec.Run(t, "CreateOrg", testCreateOrg, spec.Report(report.Terminal{}))
+}
+
+func testCreateOrg(t *testing.T, when spec.G, it spec.S) {
+	it.Before(func() {
+		RegisterTestingT(t)
+	})
+
+	it("returns an error if the creator returns an error", func() {
+		a := &cloudfoundryfakes.FakeAPI{}
+		a.CreateOrgReturns(cfclient.Org{}, errors.New("test error"))
+		org, err := cloudfoundry.CreateOrg("test-org", "appsurl", "quotaID", a)
+		Expect(err).To(HaveOccurred())
+		Expect(org).To(BeNil())
+	})
+
+	it("returns the org if it is created successfully", func() {
+		a := &cloudfoundryfakes.FakeAPI{}
+		a.CreateOrgReturns(cfclient.Org{
+			Guid:                        "test-org-guid",
+			Name:                        "test-org",
+			QuotaDefinitionGuid:         "quotaID",
+			CreatedAt:                   "created-at",
+			UpdatedAt:                   "updated-at",
+			DefaultIsolationSegmentGuid: "default-iso-seg",
+		}, nil)
+		org, err := cloudfoundry.CreateOrg("test-org", "appsurl", "quotaID", a)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(org).NotTo(BeNil())
+		expected := cloudfoundry.Organization{
+			GUID:                        "test-org-guid",
+			Name:                        "test-org",
+			QuotaDefinitionGUID:         "quotaID",
+			CreatedAt:                   "created-at",
+			UpdatedAt:                   "updated-at",
+			DefaultIsolationSegmentGUID: "default-iso-seg",
+			URL: "appsurl/organizations/test-org-guid",
+		}
+		Expect(*org).To(BeEquivalentTo(expected))
 	})
 }

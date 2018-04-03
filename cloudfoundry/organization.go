@@ -3,8 +3,10 @@ package cloudfoundry
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/pkg/errors"
 )
 
 // Organization is a Cloud Foundry Organization
@@ -18,14 +20,21 @@ type Organization struct {
 	URL                         string `json:"url"`
 }
 
-// API is a Cloud Controller API
-type API interface {
-	OrganizationQuerier
-}
-
 // OrganizationQuerier is used to query a Cloud Controller API or organizations
 type OrganizationQuerier interface {
 	ListOrgsByQuery(query url.Values) ([]cfclient.Org, error)
+}
+
+// OrganizationCreator creates orgs
+type OrganizationCreator interface {
+	CreateOrg(req cfclient.OrgRequest) (cfclient.Org, error)
+}
+
+// RoleGrantor allows for users to be granted org and space roles
+type RoleGrantor interface {
+	AssociateOrgUser(orgGUID, userGUID string) (cfclient.Org, error)
+	AssociateOrgAuditor(orgGUID, userGUID string) (cfclient.Org, error)
+	AssociateOrgManager(orgGUID, userGUID string) (cfclient.Org, error)
 }
 
 // OrgsForUserID returns the orgs that the user is a member of
@@ -36,17 +45,37 @@ func OrgsForUserID(id string, appsURL string, q OrganizationQuerier) ([]Organiza
 	if err != nil {
 		return nil, err
 	}
+
 	result := make([]Organization, len(o))
 	for i := range o {
-		result[i] = Organization{
-			GUID:                        o[i].Guid,
-			CreatedAt:                   o[i].CreatedAt,
-			UpdatedAt:                   o[i].UpdatedAt,
-			Name:                        o[i].Name,
-			QuotaDefinitionGUID:         o[i].QuotaDefinitionGuid,
-			DefaultIsolationSegmentGUID: o[i].DefaultIsolationSegmentGuid,
-			URL: fmt.Sprintf("%s/organizations/%s", appsURL, o[i].Guid),
-		}
+		result[i] = convertOrg(o[i], appsURL)
 	}
 	return result, nil
+}
+
+// CreateOrg creates an organization with the given name and quota for
+// the given user
+func CreateOrg(name string, appsURL string, quotaID string, a OrganizationCreator) (*Organization, error) {
+	req := cfclient.OrgRequest{
+		Name:                strings.ToLower(name),
+		QuotaDefinitionGuid: quotaID,
+	}
+	org, err := a.CreateOrg(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create org with name [%s] and quota [%s]", name, quotaID)
+	}
+	o := convertOrg(org, appsURL)
+	return &o, nil
+}
+
+func convertOrg(o cfclient.Org, appsURL string) Organization {
+	return Organization{
+		GUID:                        o.Guid,
+		CreatedAt:                   o.CreatedAt,
+		UpdatedAt:                   o.UpdatedAt,
+		Name:                        o.Name,
+		QuotaDefinitionGUID:         o.QuotaDefinitionGuid,
+		DefaultIsolationSegmentGUID: o.DefaultIsolationSegmentGuid,
+		URL: fmt.Sprintf("%s/organizations/%s", appsURL, o.Guid),
+	}
 }
