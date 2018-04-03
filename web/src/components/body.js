@@ -6,7 +6,7 @@ import Button from 'material-ui/Button'
 const styles = theme => ({
   button: {
     margin: theme.spacing.unit
-  },
+  }
 })
 
 class Body extends React.Component {
@@ -27,12 +27,12 @@ class Body extends React.Component {
       }
       return response.json()
     }).then(response => {
-        if (!response) {
-          return
-        }
-        this.setState({orgUrl: response.url})
-        window.location = response.url
-      })
+      if (!response) {
+        return
+      }
+      this.setState({orgUrl: response.url})
+      window.location = response.url
+    })
   }
 
   render () {
