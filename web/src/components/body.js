@@ -19,31 +19,35 @@ class Body extends React.Component {
 
   handleOrgButtonClick = () => {
     // Spinner
-    window.fetch('/organization', {
-      credentials: 'same-origin'
-    }).then(response => {
-      if (!response.ok) {
-        return
-      }
-      return response.json()
-    }).then(response => {
-      if (!response) {
-        return
-      }
-      this.setState({orgUrl: response.url})
-      window.location = response.url
-    })
+    window
+      .fetch('/organization', {
+        credentials: 'same-origin'
+      })
+      .then(response => {
+        if (!response.ok) {
+          return
+        }
+        return response.json()
+      })
+      .then(response => {
+        if (!response) {
+          return
+        }
+        this.setState({ orgUrl: response.url })
+        window.location = response.url
+      })
   }
 
   render () {
     const { classes } = this.props
     return (
-      <div >
+      <div>
         <Button
-          variant='raised'
+          variant="raised"
           className={classes.button}
-          onClick={this.handleOrgButtonClick}>
-            View My Org
+          onClick={this.handleOrgButtonClick}
+        >
+          View My Org
         </Button>
       </div>
     )

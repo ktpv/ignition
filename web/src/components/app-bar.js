@@ -31,7 +31,7 @@ const styles = {
 class MenuAppBar extends React.Component {
   constructor (props) {
     super(props)
-    const {profile} = props
+    const { profile } = props
     this.state = {
       auth: true,
       anchorEl: null,
@@ -59,20 +59,22 @@ class MenuAppBar extends React.Component {
     if (this.props && this.props.testing) {
       return
     }
-    window.fetch('/profile', {
-      credentials: 'same-origin'
-    }).then((response) => {
-      if (!response.ok) {
-        if (response.status === 401) {
-          window.location.replace('/login')
+    window
+      .fetch('/profile', {
+        credentials: 'same-origin'
+      })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            window.location.replace('/login')
+            return
+          }
+          window.location.replace('/' + response.status)
           return
         }
-        window.location.replace('/' + response.status)
-        return
-      }
-      return response.json()
-    })
-      .then((profile) => this.setState({profile}))
+        return response.json()
+      })
+      .then(profile => this.setState({ profile }))
   }
 
   render () {
@@ -86,27 +88,35 @@ class MenuAppBar extends React.Component {
 
     return (
       <div className={classes.root}>
-        <AppBar position='static'>
+        <AppBar position="static">
           <Toolbar>
-            <Typography variant='title' color='inherit' className={classes.title}>
+            <Typography
+              variant="title"
+              color="inherit"
+              className={classes.title}
+            >
               Pivotal Ignition
             </Typography>
             {profile && (
               <div className={classes.userContainer}>
-                <Typography variant='title' color='inherit' className={classes.name}>
+                <Typography
+                  variant="title"
+                  color="inherit"
+                  className={classes.name}
+                >
                   {name}
                 </Typography>
                 <IconButton
                   aria-owns={open ? 'menu-appbar' : null}
-                  aria-haspopup='true'
+                  aria-haspopup="true"
                   onClick={this.handleMenu}
-                  color='inherit'
+                  color="inherit"
                   className={classes.icon}
                 >
                   <AccountCircle />
                 </IconButton>
                 <Menu
-                  id='menu-appbar'
+                  id="menu-appbar"
                   anchorEl={anchorEl}
                   anchorOrigin={{
                     vertical: 'top',
