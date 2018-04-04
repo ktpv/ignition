@@ -131,7 +131,9 @@ class MenuAppBar extends React.Component {
 }
 
 MenuAppBar.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
+  testing: PropTypes.bool,
+  profile: PropTypes.object
 }
 
 MenuAppBar.propTypes = {
