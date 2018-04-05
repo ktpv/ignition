@@ -2,6 +2,7 @@ package internal
 
 import (
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -29,4 +30,19 @@ func handleTestdata(t *testing.T, s string, called func()) http.HandlerFunc {
 func ServeFromTestdata(t *testing.T, s string, called func()) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(handleTestdata(t, s, called))
+}
+
+// StringFromTestdata reads the given file from the testdata dierctory and
+// returns it as a string
+func StringFromTestdata(t *testing.T, s string) string {
+	f, err := os.Open(filepath.Join("testdata", s))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
 }
