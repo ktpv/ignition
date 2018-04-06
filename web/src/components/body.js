@@ -15,8 +15,6 @@ import step1 from './../../images/step_1.svg'
 import step2 from './../../images/step_2.svg'
 import step3 from './../../images/step_3.svg'
 
-//const bubbleBackground1 = '#083c61'
-
 const styles = theme => ({
   body: {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
