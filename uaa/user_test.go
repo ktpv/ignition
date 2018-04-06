@@ -139,12 +139,22 @@ func testCreateUser(t *testing.T, when spec.G, it spec.S) {
 
 	it.Before(func() {
 		RegisterTestingT(t)
-		s = internal.ServeFromTestdata(t, "users.json", func() {})
-		a = &uaa.Client{URL: s.URL}
+		a = &uaa.Client{}
 	})
 
 	it.After(func() {
-		s.Close()
+		if s != nil {
+			s.Close()
+		}
+	})
+
+	when("there are not valid credentials, and no token or client", func() {
+		it("fails to create the user when there are invalid credentials", func() {
+			a.Token = nil
+			a.Client = nil
+			_, err := a.CreateUser("user", "uaa", "external-user", "user@example.com")
+			Expect(err).To(HaveOccurred())
+		})
 	})
 
 	when("there is a valid token and client", func() {
@@ -156,9 +166,32 @@ func testCreateUser(t *testing.T, when spec.G, it spec.S) {
 			a.Client = http.DefaultClient
 		})
 
-		it("creates the user", func() {
-			_, err := a.CreateUser("user", "uaa", "external-user", "user@example.com")
-			Expect(err).NotTo(HaveOccurred())
+		when("the user is created successfully", func() {
+			it.Before(func() {
+				s = internal.ServeFromTestdata(t, "created-user.json", func() {})
+				a.URL = s.URL
+			})
+
+			it("returns the userID", func() {
+				userID, err := a.CreateUser("user", "uaa", "external-user", "user@example.com")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(userID).To(Equal("abcdef11-0000-dddd-aaaa-1234567890ab"))
+			})
+		})
+
+		when("the user cannot be created", func() {
+			it.Before(func() {
+				s = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusInternalServerError)
+				}))
+				a.URL = s.URL
+			})
+
+			it("is an error", func() {
+				userID, err := a.CreateUser("user", "uaa", "external-user", "user@example.com")
+				Expect(err).To(HaveOccurred())
+				Expect(userID).To(BeZero())
+			})
 		})
 	})
 
