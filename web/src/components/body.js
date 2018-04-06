@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Typography from 'material-ui/Typography';
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 
@@ -16,7 +15,7 @@ import step1 from './../../images/step_1.svg'
 import step2 from './../../images/step_2.svg'
 import step3 from './../../images/step_3.svg'
 
-const bubbleBackground1 = '#083c61'
+//const bubbleBackground1 = '#083c61'
 
 const styles = theme => ({
   body: {
@@ -41,10 +40,10 @@ const styles = theme => ({
       width: '0px',
       height: '0px',
       position: 'absolute',
-      borderLeft:'100px solid #083c61',
-      borderRight:'100px solid transparent',
-      borderTop:'25px solid #083c61',
-      borderBottom:'25px solid transparent',
+      borderLeft: '100px solid #083c61',
+      borderRight: '100px solid transparent',
+      borderTop: '25px solid #083c61',
+      borderBottom: '25px solid transparent',
       right: '-175px',
       top: '75px'
     }
@@ -74,7 +73,7 @@ const styles = theme => ({
   },
   rocketMan: {
     backgroundImage: `url("${rocketMan}")`,
-    //height: '375px',
+    // height: '375px',
     width: '40vw',
     backgroundRepeat: 'no-repeat'
   },
@@ -112,8 +111,8 @@ const styles = theme => ({
     width: '225px'
   },
   stepImage: {
-    height: '146px',
-    //width: '100%'
+    height: '146px'
+    // width: '100%'
   },
 
   // CTA 3: spaces overview
@@ -133,7 +132,7 @@ const styles = theme => ({
     fontSize: '2rem',
     height: '375px',
     width: '40vw',
-    backgroundColor: '#9ed4d4',
+    backgroundColor: '#9ed4d4'
   },
   moonMan: {
     backgroundImage: `url("${moonMan}")`,
@@ -184,7 +183,7 @@ class Body extends React.Component {
             }
           </div>
         </div>
-        <div className={classes.rocketMan}></div>
+        <div className={classes.rocketMan} />
       </div>
     )
   }
@@ -220,7 +219,7 @@ class Body extends React.Component {
             spaceMessages.map(msg => <p>{msg}</p>)
           }
         </div>
-        <div className={classes.moonMan}></div>
+        <div className={classes.moonMan} />
       </div>
     )
   }
@@ -233,7 +232,7 @@ class Body extends React.Component {
         variant='raised'
         className={classes}
         onClick={this.handleOrgButtonClick}>
-          {text}
+        {text}
       </Button>
     )
   }
