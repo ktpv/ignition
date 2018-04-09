@@ -11,9 +11,9 @@ import rocketMan from './../../images/frgd_rocket-man.svg'
 import moonMan from './../../images/frgd_moon-man.svg'
 import pewPew from './../../images/frgd_pewpew-man2.svg'
 
-import step1 from './../../images/step_1.svg'
-import step2 from './../../images/step_2.svg'
-import step3 from './../../images/step_3.svg'
+import step1 from './../../images/step-1.svg'
+import step2 from './../../images/step-2.svg'
+import step3 from './../../images/step-3.svg'
 
 const makeSpeechBubbleClass = (bgColor, fgColor) => ({
   position: 'relative', // so we can overlap the button
