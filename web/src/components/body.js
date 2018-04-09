@@ -26,6 +26,9 @@ const makeSpeechBubbleClass = (bgColor, fgColor) => ({
   fontSize: '1.75rem',
   height: 'auto',
   width: '40vw',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
 
   '&:before': {
     content: '""',
@@ -43,6 +46,7 @@ const makeSpeechBubbleClass = (bgColor, fgColor) => ({
 
 const speech1Background = '#083c61'
 const speech2Background = '#9bd2d2'
+const greenButton = '#007D69'
 
 const styles = theme => ({
   body: {
@@ -55,7 +59,13 @@ const styles = theme => ({
   // for buttons that overlap the bottom of a speech bubble
   speechButton: {
     position: 'absolute',
-    bottom: -3 * theme.spacing.unit
+    bottom: -4 * theme.spacing.unit,
+    backgroundColor: greenButton,
+    color: 'white',
+    height: 7 * theme.spacing.unit,
+    fontWeight: 'bold',
+    letterSpacing: '3px',
+    boxShadow: '-5px 5px 3px rgba(0, 0, 0, 0.29)'
   },
   welcomeSpeech: makeSpeechBubbleClass(speech1Background, 'white'),
   spacesSpeech: makeSpeechBubbleClass(speech2Background, 'black'),
@@ -104,13 +114,6 @@ const styles = theme => ({
     height: '450px',
     width: '450px',
     flexShrink: 0
-
-    // justifyContent: 'space-evenly',
-    // alignItems: 'flex-start',
-    //
-    // paddingLeft: '250px',
-    // paddingRight: '75px',
-    // paddingBottom: '50px'
   },
   step: {
     textAlign: 'center',
@@ -125,7 +128,6 @@ const styles = theme => ({
   stepImage: {
     height: '146px',
     marginTop: '-82px'
-    // width: '100%'
   },
 
   // CTA 3: spaces overview
@@ -185,8 +187,7 @@ class Body extends React.Component {
         <div>
           <div className={classes.welcomeSpeech}>
             {introMessages.map((msg, i) => <p key={i}>{msg}</p>)}
-            {false &&
-              this.renderButton('Give Me an Org!', classes.speechButton)}
+            {this.renderButton('Give Me an Org!', classes.speechButton)}
           </div>
         </div>
         <div className={classes.rocketMan} />
@@ -216,11 +217,11 @@ class Body extends React.Component {
             <img className={classes.stepImage} src={step2} />
           </div>
           <p>
-          Download the{' '}
+            Download the{' '}
             <a href="https://github.com/cloudfoundry-samples/spring-music">
-            sample app
+              sample app
             </a>{' '}
-          from Github
+            from Github
           </p>
         </div>
         <div className={classes.step}>
@@ -228,9 +229,9 @@ class Body extends React.Component {
             <img className={classes.stepImage} src={step3} />
           </div>
           <p>
-          Learn to{' '}
+            Learn to{' '}
             <a href="https://docs.pivotal.io/pivotalcf/latest/devguide/deploy-apps/deploy-app.html">
-            deploy an app
+              deploy an app
             </a>
           </p>
         </div>
@@ -245,6 +246,10 @@ class Body extends React.Component {
         <div>
           <div className={classes.spacesSpeech}>
             {spaceMessages.map((msg, i) => <p key={i}>{msg}</p>)}
+            {this.renderButton(
+              `I'm ready. Go to my org!`,
+              classes.speechButton
+            )}
           </div>
         </div>
         <div className={classes.moonMan} />
@@ -257,6 +262,7 @@ class Body extends React.Component {
     if (extraClasses) classes += ' ' + extraClasses
     return (
       <Button
+        size="large"
         variant="raised"
         className={classes}
         onClick={this.handleOrgButtonClick}
@@ -273,7 +279,6 @@ class Body extends React.Component {
         {this.renderWelcomeInfo()}
         {this.renderGettingStartedSteps()}
         {this.renderSpacesInfo()}
-        {this.renderButton('View My Org')}
       </div>
     )
   }
