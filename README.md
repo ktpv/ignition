@@ -87,7 +87,7 @@ To authenticate against PCF SSO tile:
 ### Run the application locally
 
 1. Make sure you're in the repository root directory: `cd $GOPATH/src/github.com/pivotalservices/ignition`
-1. Ensure the web bundle is built: `pushd web && yarn build && popd`
+1. Ensure the web bundle is built: `pushd web && yarn install && yarn build && popd`
 1. Start the go web app: `go run cmd/ignition/main.go`
 1. Navigate to http://localhost:3000
 
