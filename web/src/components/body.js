@@ -76,8 +76,8 @@ const styles = theme => ({
   },
   rocketMan: {
     backgroundImage: `url("${rocketMan}")`,
-    // height: '375px',
-    width: '40vw',
+    height: '450px',
+    width: '450px',
     backgroundRepeat: 'no-repeat'
   },
 
@@ -91,7 +91,9 @@ const styles = theme => ({
     color: 'white',
     padding: 6 * theme.spacing.unit,
     height: '700px',
-    fontSize: '32px'
+    fontSize: '32px',
+    display: 'flex',
+    flexDirection: 'row'
   },
   pewPew: {
     backgroundImage: `url("${pewPew}")`,
@@ -99,15 +101,14 @@ const styles = theme => ({
     backgroundPosition: 'left',
     backgroundSize: 'auto',
     height: '450px',
+    width: '450px'
 
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'flex-start',
-
-    paddingLeft: '250px',
-    paddingRight: '75px',
-    paddingBottom: '50px'
+    // justifyContent: 'space-evenly',
+    // alignItems: 'flex-start',
+    //
+    // paddingLeft: '250px',
+    // paddingRight: '75px',
+    // paddingBottom: '50px'
   },
   step: {
     textAlign: 'center',
@@ -132,7 +133,7 @@ const styles = theme => ({
   },
   moonMan: {
     backgroundImage: `url("${moonMan}")`,
-    height: '375px',
+    height: '450px',
     width: '400px',
     backgroundRepeat: 'no-repeat'
   }
@@ -188,34 +189,35 @@ class Body extends React.Component {
     const { classes } = this.props
     return (
       <div className={classes.ctaSteps}>
-        <div className={classes.pewPew}>
-          <div className={classes.step}>
-            <div>
-              <img className={classes.stepImage} src={step1} />
-            </div>
-            Get the{' '}
-            <a href="https://docs.pivotal.io/pivotalcf/latest/cf-cli/">
-              Cloud Foundry CLI from Pivotal.
-            </a>
+        <div className={classes.pewPew} />
+        <div className={classes.step}>
+          <div>
+            <img className={classes.stepImage} src={step1} />
           </div>
-          <div className={classes.step}>
-            <div>
-              <img className={classes.stepImage} src={step2} />
-            </div>
-            Download the{' '}
-            <a href="https://github.com/cloudfoundry-samples/spring-music">
-              sample app from Github.
-            </a>
+          Get the{' '}
+          <a href="https://docs.pivotal.io/pivotalcf/latest/cf-cli/">
+            Cloud Foundry CLI
+          </a>{' '}
+          from Pivotal
+        </div>
+        <div className={classes.step}>
+          <div>
+            <img className={classes.stepImage} src={step2} />
           </div>
-          <div className={classes.step}>
-            <div>
-              <img className={classes.stepImage} src={step3} />
-            </div>
-            Learn to{' '}
-            <a href="https://docs.pivotal.io/pivotalcf/latest/devguide/deploy-apps/deploy-app.html">
-              deploy an app.
-            </a>
+          Download the{' '}
+          <a href="https://github.com/cloudfoundry-samples/spring-music">
+            sample app
+          </a>{' '}
+          from Github
+        </div>
+        <div className={classes.step}>
+          <div>
+            <img className={classes.stepImage} src={step3} />
           </div>
+          Learn to{' '}
+          <a href="https://docs.pivotal.io/pivotalcf/latest/devguide/deploy-apps/deploy-app.html">
+            deploy an app
+          </a>
         </div>
       </div>
     )
@@ -225,8 +227,10 @@ class Body extends React.Component {
     const { classes } = this.props
     return (
       <div className={classes.ctaSpaces}>
-        <div className={classes.spacesSpeech}>
-          {spaceMessages.map((msg, i) => <p key={i}>{msg}</p>)}
+        <div>
+          <div className={classes.spacesSpeech}>
+            {spaceMessages.map((msg, i) => <p key={i}>{msg}</p>)}
+          </div>
         </div>
         <div className={classes.moonMan} />
       </div>
