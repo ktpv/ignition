@@ -101,7 +101,8 @@ const styles = theme => ({
     backgroundPosition: 'left',
     backgroundSize: 'auto',
     height: '450px',
-    width: '450px'
+    width: '450px',
+    flexShrink: 0
 
     // justifyContent: 'space-evenly',
     // alignItems: 'flex-start',
@@ -112,10 +113,13 @@ const styles = theme => ({
   },
   step: {
     textAlign: 'center',
-    width: '225px'
+    width: '225px',
+    borderTop: '4px solid gold',
+    marginTop: '64px'
   },
   stepImage: {
-    height: '146px'
+    height: '146px',
+    marginTop: '-82px'
     // width: '100%'
   },
 
