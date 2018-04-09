@@ -93,7 +93,8 @@ const styles = theme => ({
     height: '700px',
     fontSize: '32px',
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    minWidth: '1224px'
   },
   pewPew: {
     backgroundImage: `url("${pewPew}")`,
@@ -113,9 +114,13 @@ const styles = theme => ({
   },
   step: {
     textAlign: 'center',
-    width: '225px',
-    borderTop: '4px solid gold',
-    marginTop: '64px'
+    borderTop: '9px solid #FFC712',
+    marginTop: '64px',
+    flexGrow: '1',
+    '& p': {
+      maxWidth: '250px',
+      margin: 'auto'
+    }
   },
   stepImage: {
     height: '146px',
@@ -198,30 +203,36 @@ class Body extends React.Component {
           <div>
             <img className={classes.stepImage} src={step1} />
           </div>
-          Get the{' '}
-          <a href="https://docs.pivotal.io/pivotalcf/latest/cf-cli/">
-            Cloud Foundry CLI
-          </a>{' '}
-          from Pivotal
+          <p>
+            Get the{' '}
+            <a href="https://docs.pivotal.io/pivotalcf/latest/cf-cli/">
+              Cloud Foundry CLI
+            </a>{' '}
+            from Pivotal
+          </p>
         </div>
         <div className={classes.step}>
           <div>
             <img className={classes.stepImage} src={step2} />
           </div>
+          <p>
           Download the{' '}
-          <a href="https://github.com/cloudfoundry-samples/spring-music">
+            <a href="https://github.com/cloudfoundry-samples/spring-music">
             sample app
-          </a>{' '}
+            </a>{' '}
           from Github
+          </p>
         </div>
         <div className={classes.step}>
           <div>
             <img className={classes.stepImage} src={step3} />
           </div>
+          <p>
           Learn to{' '}
-          <a href="https://docs.pivotal.io/pivotalcf/latest/devguide/deploy-apps/deploy-app.html">
+            <a href="https://docs.pivotal.io/pivotalcf/latest/devguide/deploy-apps/deploy-app.html">
             deploy an app
-          </a>
+            </a>
+          </p>
         </div>
       </div>
     )
