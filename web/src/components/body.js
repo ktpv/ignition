@@ -59,7 +59,8 @@ const footerLinks = [
 const styles = theme => ({
   body: {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
-    fontWeight: 'lighter'
+    fontWeight: 'lighter',
+    marginTop: '68px'
   },
   button: {
     margin: theme.spacing.unit
