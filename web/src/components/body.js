@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
+import Footer from './footer'
 
 import milkyWay from './../../images/bkgd_milky-way_full.svg'
 import deepSpace from './../../images/bkgd_lvl2_deep-space.svg'
@@ -14,6 +15,7 @@ import pewPew from './../../images/frgd_pewpew-man2.svg'
 import step1 from './../../images/step-1.svg'
 import step2 from './../../images/step-2.svg'
 import step3 from './../../images/step-3.svg'
+import pivotalLogo from './../../images/pivotal.png'
 
 const makeSpeechBubbleClass = (bgColor, fgColor) => ({
   position: 'relative', // so we can overlap the button
@@ -47,6 +49,12 @@ const makeSpeechBubbleClass = (bgColor, fgColor) => ({
 const speech1Background = '#083c61'
 const speech2Background = '#9bd2d2'
 const greenButton = '#007D69'
+
+const footerLinks = [
+  { text: 'Copyright', url: '' },
+  { text: 'Terms', url: '' },
+  { text: 'Contact', url: '' }
+]
 
 const styles = theme => ({
   body: {
@@ -281,6 +289,7 @@ class Body extends React.Component {
         {this.renderWelcomeInfo()}
         {this.renderGettingStartedSteps()}
         {this.renderSpacesInfo()}
+        <Footer links={footerLinks} logoURL={pivotalLogo} />
       </div>
     )
   }
