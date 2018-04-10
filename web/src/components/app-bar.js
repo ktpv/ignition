@@ -10,7 +10,12 @@ import Menu, { MenuItem } from 'material-ui/Menu'
 
 const styles = {
   root: {
-    flexGrow: 1
+    flexGrow: 1,
+    position: 'sticky',
+    top: 0,
+    left: 'auto',
+    right: 0,
+    zIndex: 999
   },
   title: {
     flexGrow: 1
@@ -88,7 +93,7 @@ class MenuAppBar extends React.Component {
 
     return (
       <div className={classes.root}>
-        <AppBar position="static">
+        <AppBar>
           <Toolbar>
             <Typography
               variant="title"
