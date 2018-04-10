@@ -2,15 +2,17 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from 'material-ui/styles'
 import AppBar from 'material-ui/AppBar'
+import Button from 'material-ui/Button'
 import Toolbar from 'material-ui/Toolbar'
 import Typography from 'material-ui/Typography'
 import IconButton from 'material-ui/IconButton'
 import AccountCircle from 'material-ui-icons/AccountCircle'
 import Menu, { MenuItem } from 'material-ui/Menu'
+import { getOrgUrl } from './../org'
 
 import ignitionLogo from './../../images/ignition.svg'
 
-const styles = {
+const styles = theme => ({
   root: {
     display: 'flex',
     position: 'sticky',
@@ -38,11 +40,17 @@ const styles = {
   icon: {
     flexShrink: 1
   },
+  button: {
+    margin: theme.spacing.unit,
+    backgroundColor: theme.palette.primary.main,
+    color: 'white',
+    letterSpacing: '0.5px'
+  },
   menuButton: {
     marginLeft: -12,
     marginRight: 20
   }
-}
+})
 
 class MenuAppBar extends React.Component {
   constructor (props) {
@@ -52,6 +60,13 @@ class MenuAppBar extends React.Component {
       auth: true,
       anchorEl: null,
       profile: profile
+    }
+  }
+
+  handleButton = async () => {
+    const url = await getOrgUrl()
+    if (url) {
+      window.location = url
     }
   }
 
@@ -119,6 +134,14 @@ class MenuAppBar extends React.Component {
                 >
                   {`Welcome, ${name}`}
                 </Typography>
+                <Button
+                  className={classes.button}
+                  size="large"
+                  variant="raised"
+                  onClick={this.handleButton}
+                >
+                  My Org
+                </Button>
                 <IconButton
                   aria-owns={open ? 'menu-appbar' : null}
                   aria-haspopup="true"

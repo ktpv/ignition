@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import Footer from './footer'
+import { getOrgUrl } from '../org'
 
 import milkyWay from './../../images/bkgd_milky-way_full.svg'
 import deepSpace from './../../images/bkgd_lvl2_deep-space.svg'
@@ -179,25 +180,13 @@ class Body extends React.Component {
     }
   }
 
-  handleOrgButtonClick = () => {
-    // Spinner
-    window
-      .fetch('/organization', {
-        credentials: 'same-origin'
-      })
-      .then(response => {
-        if (!response.ok) {
-          return
-        }
-        return response.json()
-      })
-      .then(response => {
-        if (!response) {
-          return
-        }
-        this.setState({ orgUrl: response.url })
-        window.location = response.url
-      })
+  handleOrgButtonClick = async () => {
+    // TODO: show spinner
+    const url = await getOrgUrl()
+    if (url) {
+      this.setState({ orgUrl: url })
+      window.location = url
+    }
   }
 
   renderWelcomeInfo () {
