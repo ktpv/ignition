@@ -50,7 +50,7 @@ To authenticate against google:
   * IGNITION_JWKS_URL="https://www.googleapis.com/oauth2/v3/certs"
   * IGNITION_ISSUER_URL="https://accounts.google.com"
   * IGNITION_AUTH_SCOPES="openid,email,profile"
-  * IGNITION_AUTHORIZED_DOMAIN="@pivotal.io"
+  * IGNITION_AUTHORIZED_DOMAIN="@[your-domain]"
   * IGNITION_SESSION_SECRET="your-session-secret-here"
   * IGNITION_UAA_URL="https://login.[system-domain]"
   * IGNITION_APPS_URL="https://apps.[system-domain]"
