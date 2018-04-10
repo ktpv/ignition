@@ -205,10 +205,11 @@ class Body extends React.Component {
             <img className={classes.stepImage} src={step1} />
           </div>
           <p>
-            Get the{' '}
+            Get the<br />
             <a href="https://docs.pivotal.io/pivotalcf/latest/cf-cli/">
               Cloud Foundry CLI
-            </a>{' '}
+            </a>
+            <br />
             from Pivotal
           </p>
         </div>
@@ -217,10 +218,11 @@ class Body extends React.Component {
             <img className={classes.stepImage} src={step2} />
           </div>
           <p>
-            Download the{' '}
+            Download the <br />
             <a href="https://github.com/cloudfoundry-samples/spring-music">
               sample app
-            </a>{' '}
+            </a>
+            <br />
             from Github
           </p>
         </div>
@@ -229,7 +231,7 @@ class Body extends React.Component {
             <img className={classes.stepImage} src={step3} />
           </div>
           <p>
-            Learn to{' '}
+            Learn to<br />
             <a href="https://docs.pivotal.io/pivotalcf/latest/devguide/deploy-apps/deploy-app.html">
               deploy an app
             </a>
