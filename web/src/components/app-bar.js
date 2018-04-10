@@ -8,16 +8,31 @@ import IconButton from 'material-ui/IconButton'
 import AccountCircle from 'material-ui-icons/AccountCircle'
 import Menu, { MenuItem } from 'material-ui/Menu'
 
+import ignitionLogo from './../../images/ignition.svg'
+
 const styles = {
   root: {
-    flexGrow: 1,
+    display: 'flex',
     position: 'sticky',
     top: 0,
     left: 'auto',
     right: 0,
     zIndex: 999
   },
-  title: {
+  logoContainer: {
+    background: '#F2F0F1',
+    padding: 0
+  },
+  logo: {
+    height: '64px',
+    padding: '8px 24px'
+  },
+  userContainer: {
+    display: 'flex',
+    flexGrow: 1,
+    alignItems: 'center'
+  },
+  name: {
     flexGrow: 1
   },
   icon: {
@@ -26,10 +41,6 @@ const styles = {
   menuButton: {
     marginLeft: -12,
     marginRight: 20
-  },
-  userContainer: {
-    display: 'flex',
-    alignItems: 'center'
   }
 }
 
@@ -93,29 +104,26 @@ class MenuAppBar extends React.Component {
 
     return (
       <div className={classes.root}>
-        <AppBar>
-          <Toolbar>
-            <Typography
-              variant="title"
-              color="inherit"
-              className={classes.title}
-            >
-              Pivotal Ignition
-            </Typography>
+        <AppBar color="white">
+          <Toolbar disableGutters={true}>
+            <div className={classes.logoContainer}>
+              <img className={classes.logo} src={ignitionLogo} />
+            </div>
             {profile && (
               <div className={classes.userContainer}>
                 <Typography
-                  variant="title"
-                  color="inherit"
+                  variant="subheading"
+                  color="primary"
+                  align="right"
                   className={classes.name}
                 >
-                  {name}
+                  {`Welcome, ${name}`}
                 </Typography>
                 <IconButton
                   aria-owns={open ? 'menu-appbar' : null}
                   aria-haspopup="true"
                   onClick={this.handleMenu}
-                  color="inherit"
+                  color="primary"
                   className={classes.icon}
                 >
                   <AccountCircle />
